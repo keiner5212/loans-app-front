@@ -1,4 +1,4 @@
-# Lian App
+# Loan App
 
 ## Requirements
 - [Node.js](https://nodejs.org/en/) (minimum version 16.x), download the Long Term Support (LTS) version and install it.
@@ -12,7 +12,7 @@ Once you have the prerequisites installed, follow these steps to get started:
 - Clone this repository
 - Open the repository in VS Code
 - Run `pnpm install` in the repository root folder to install the dependencies
-- Run `pnpm dev` in the repository root folder to start the development server
+- Run `pnpm run tauri dev` in the repository root folder to start the development server
 
 
 ## Recommended IDE Setup

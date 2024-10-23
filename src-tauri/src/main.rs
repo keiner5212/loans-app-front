@@ -51,13 +51,6 @@ fn execute_command(command: String, args: Vec<String>, emit_event: bool) {
     });
 }
 
-// fn main() {
-//     tauri::Builder::default()
-//         .invoke_handler(tauri::generate_handler![execute_command])
-//         .run(tauri::generate_context!())
-//         .expect("error while running tauri application");
-// }
-
 
 fn main() {
     // creating a menu for the system tray, with a quit option (add more options later if needed)
@@ -67,7 +60,7 @@ fn main() {
     let system_tray_menu = SystemTrayMenu::new().add_item(quit);
 
     // title of the system tray
-    let tray_title = "Hello Node";
+    let tray_title = "Loan App";
 
     // creating the tauri application
     tauri::Builder::default()

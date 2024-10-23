@@ -24,8 +24,8 @@
     "windows": [
       {
         "title": "Loan App",
-        "width": 800,
-        "height": 600,
+        "width": 1024,
+        "height": 576,
         "resizable": false
       }
     ],

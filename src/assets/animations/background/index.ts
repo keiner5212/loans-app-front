@@ -113,6 +113,8 @@ function resize() {
     canvas.height = innerHeight;
     width = innerWidth;
     height = innerHeight;
+    initHeader();
+    initAnimation();
 }
 
 // animation
@@ -206,9 +208,4 @@ export const init = () => {
     initAnimation();
     addListeners();
     resize();
-
-    //rezise listener
-    window.addEventListener("resize", () => {
-        resize();
-    });
 }

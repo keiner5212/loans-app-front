@@ -1,0 +1,110 @@
+/* Estilos de la animación del overlay */
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes slideIn {
+  0% {
+    transform: translateY(-50px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOut {
+  0% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-50px);
+    opacity: 0;
+  }
+}
+
+/* Overlay del modal con animación */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  backdrop-filter: blur(8px);
+  z-index: 1000;
+  opacity: 0;
+  animation: fadeOut 0.3s forwards; /* Animación por defecto (fadeOut) */
+}
+
+.modal-overlay.open {
+  animation: fadeIn 0.3s forwards; /* Se activa cuando el modal está abierto */
+}
+
+/* Contenedor del modal */
+.modal-container {
+  background-color: white;
+  padding: 20px;
+  border-radius: 10px;
+  max-width: 500px;
+  width: 100%;
+  box-shadow: 0px 4px 16px rgba(0, 0, 0, 0.2);
+  text-align: center;
+  transform: translateY(-50px); /* Animación de deslizamiento hacia abajo al abrir */
+  opacity: 0; /* Inicia oculto */
+  animation: slideOut 0.3s forwards; /* Animación por defecto (slideOut) */
+}
+
+.modal-overlay.open .modal-container {
+  animation: slideIn 0.3s forwards; /* Se activa cuando el modal está abierto */
+}
+
+.modal-title {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.modal-message {
+  font-size: 18px;
+  margin-bottom: 20px;
+}
+
+.modal-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.modal-button {
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.modal-button:hover {
+  background-color: #0056b3;
+}

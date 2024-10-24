@@ -1,7 +1,8 @@
 import "./loader.css";
-export const Loader = () => {
+
+export const Loader = ({ size = "70px" }) => {
   return (
-    <div className="loader">
+    <div className="loader" style={{ "--size": size } as any}>
       <span></span>
       <span></span>
       <span></span>

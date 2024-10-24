@@ -4,6 +4,7 @@ import { LoaderScreen } from "../Loader/LoaderScreen";
 import { useAppStore } from "../../store/appStore";
 import { CiLogin } from "react-icons/ci";
 import { useNavigate } from "react-router-dom";
+import { Roles } from "../../constants/permisions/Roles";
 
 type Props = {
   children: ReactNode;
@@ -19,6 +20,32 @@ export const Layout: FC<Props> = ({ children, loading = false }) => {
     {
       title: "Solicitudes de Crédito/Financiamiento",
       url: "/solicitudes",
+      allowed: Roles.USER_COLLOCATION,
+    },
+    {
+      title: "Cobros y Recibos",
+      url: "/cobros",
+      allowed: Roles.USER_RECOVERY,
+    },
+    {
+      title: "Alertas",
+      url: "/alertas",
+      allowed: Roles.USER_ADMIN,
+    },
+    {
+      title: "Administrar Usuarios",
+      url: "/administrar-usuarios",
+      allowed: Roles.USER_ADMIN,
+    },
+    {
+      title: "Reportes",
+      url: "/reportes",
+      allowed: Roles.USER_ADMIN,
+    },
+    {
+      title: "Configuración del sistema",
+      url: "/configuracion",
+      allowed: Roles.USER_MASTER,
     },
   ];
 

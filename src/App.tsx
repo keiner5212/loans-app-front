@@ -5,9 +5,20 @@ import { LoaderScreen } from "./components/Loader/LoaderScreen";
 import { useAppStore } from "./store/appStore";
 import { configureAxios } from "./api/axiosInstance";
 
+
 const Home = lazy<ComponentType>(() => import("./pages/home/index"));
 const Login = lazy<ComponentType>(() => import("./pages/Auth/Login"));
 const Solicitudes = lazy<ComponentType>(() => import("./pages/solicitudes/index"));
+const Alertas = lazy<ComponentType>(() => import("./pages/alertas/index"));
+const Cobros = lazy<ComponentType>(() => import("./pages/cobros/index"));
+const Reportes = lazy<ComponentType>(() => import("./pages/reportes/index"));
+const Configuracion = lazy<ComponentType>(() =>
+  import("./pages/settings/index")
+);
+const AdministrarUsuarios = lazy<ComponentType>(() =>
+  import("./pages/adminUsuarios/index")
+);
+
 
 function App() {
   const { authToken, setTokenReady, setAuthToken } = useAppStore();
@@ -37,6 +48,12 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/solicitudes" element={<Solicitudes />} />
+          <Route path="/cobros" element={<Cobros />} />
+          <Route path="/alertas" element={<Alertas />} />
+          <Route path="/reportes" element={<Reportes />} />
+          <Route path="/configuracion" element={<Configuracion />} />
+          <Route path="/administrar-usuarios" element={<AdministrarUsuarios />} />
+          <Route path="*" element={<Home />} />
         </Routes>
       </Suspense>
     </BrowserRouter>

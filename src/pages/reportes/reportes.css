@@ -1,0 +1,53 @@
+/* Estilos para los formularios y botones */
+input[type="date"],
+select {
+  padding: 10px;
+  margin: 10px 0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  width: calc(100% - 22px); /* Ajusta el ancho del input */
+}
+
+button {
+  background-color: #4caf50; /* Verde */
+  color: white;
+  padding: 10px 15px;
+  margin: 5px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-right: 10px;
+  transition: background-color 0.3s;
+}
+
+/* Cambia el color del botón al pasar el mouse */
+button:hover {
+  background-color: #45a049;
+}
+
+/* Estilos para la lista de solicitudes */
+ul {
+  list-style-type: none; /* Elimina los puntos de la lista */
+  padding: 0;
+}
+
+li {
+  padding: 8px;
+  margin: 5px 0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: #f9f9f9; /* Color de fondo para los elementos de la lista */
+}
+
+/* Estilos de encabezado */
+h3 {
+  margin-top: 0;
+}
+
+h4 {
+  margin: 10px 0;
+}
+.selected {
+  background-color: #d1e7dd; /* Un color suave para resaltar */
+  border: 1px solid #0f3151; /* Un borde más oscuro para mayor definición */
+}

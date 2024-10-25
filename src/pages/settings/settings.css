@@ -1,0 +1,75 @@
+/* Estilos para la pestaña de configuraciones */
+#configuraciones {
+    display: flex; /* Usar flexbox para centrar el contenido */
+    justify-content: center; /* Centrar horizontalmente */
+    padding: 20px; /* Espaciado interno */
+    background-color: #f9f9f9; /* Fondo claro */
+}
+
+.configuracion-opciones {
+    display: flex; /* Usar flexbox para la alineación de opciones */
+    flex-direction: column; /* Alinear en columna */
+    align-items: flex-start; /* Alinear opciones a la izquierda */
+    max-width: 500px; /* Limitar el ancho máximo */
+    width: 100%; /* Ancho completo */
+}
+
+/* Estilo para cada opción */
+.configuracion-opcion {
+    padding: 15px; /* Espaciado interno */
+    width: 100%; /* Ancho completo */
+    position: relative; /* Posicionar el separador */
+}
+
+/* Separador vertical */
+.configuracion-opcion::after {
+    content: ""; /* Crear un contenido vacío para el separador */
+    position: absolute; /* Posicionamiento absoluto */
+    top: 50%; /* Centrar verticalmente */
+    right: -10px; /* Ajustar la posición del separador */
+    width: 1px; /* Ancho del separador */
+    height: 60%; /* Altura del separador */
+    background-color: #ccc; /* Color del separador */
+    transform: translateY(-50%); /* Centrar el separador verticalmente */
+}
+
+/* Última opción sin separador */
+.configuracion-opcion:last-child::after {
+    display: none; /* Ocultar el separador en la última opción */
+}
+
+#configuraciones h3 {
+    font-size: 24px; /* Tamaño de fuente para el título */
+    margin-bottom: 20px; /* Margen inferior */
+}
+
+#configuraciones label {
+    display: block; /* Mostrar etiquetas en bloque */
+    margin-bottom: 5px; /* Margen inferior para separación */
+    font-weight: bold; /* Hacer las etiquetas más destacadas */
+}
+
+#configuraciones select,
+#configuraciones input[type="file"],
+#configuraciones input[type="text"],
+#configuraciones input[type="number"] {
+    width: 100%; /* Ancho completo */
+    padding: 10px; /* Espaciado interno */
+    border: 1px solid #ccc; /* Bordes delgados */
+    border-radius: 4px; /* Bordes redondeados */
+    margin-bottom: 15px; /* Margen inferior para separación */
+}
+
+#configuraciones button {
+    background-color: #007bff; /* Color de fondo del botón */
+    color: white; /* Color del texto */
+    padding: 10px 20px; /* Espaciado interno del botón */
+    border: none; /* Sin bordes */
+    border-radius: 4px; /* Bordes redondeados */
+    cursor: pointer; /* Cambiar el cursor al pasar sobre el botón */
+    transition: background-color 0.3s; /* Efecto de transición */
+}
+
+#configuraciones button:hover {
+    background-color: #0056b3; /* Color de fondo al pasar el cursor */
+}

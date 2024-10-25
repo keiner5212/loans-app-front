@@ -1,12 +1,48 @@
-import { FC } from "react";
+import { FC, useEffect, useRef } from "react";
 import { Layout } from "../../components/Layout";
+import "../../components/tabs/tabs.css";
+import { openContent } from "../../components/tabs";
 
 const Reportes: FC = () => {
-    return (
-        <Layout>
-            <h1>Reportes</h1>
-        </Layout>
-    );
-}
+  const defaultTabRef = useRef<HTMLButtonElement>(null);
 
-export default Reportes
+  useEffect(() => {
+    if (defaultTabRef.current) {
+      defaultTabRef.current.click();
+    }
+  }, []);
+
+  return (
+    <Layout>
+      <div className="tab">
+        <button
+          className="tablinks"
+          ref={defaultTabRef}
+          onClick={(event) => openContent(event, "sol_credito")}
+        >
+          Añadir solicitud de Crédito
+        </button>
+        <button
+          className="tablinks"
+          onClick={(event) => openContent(event, "sol_financiamiento")}
+        >
+          Añadir solicitud de Financiamiento
+        </button>
+        <button
+          className="tablinks"
+          onClick={(event) => openContent(event, "admin_solicitudes")}
+        >
+          Administrar solicitudes
+        </button>
+      </div>
+
+      <div id="sol_credito" className="tabcontent"></div>
+
+      <div id="sol_financiamiento" className="tabcontent"></div>
+
+      <div id="admin_solicitudes" className="tabcontent"></div>
+    </Layout>
+  );
+};
+
+export default Reportes;

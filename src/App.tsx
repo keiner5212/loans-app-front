@@ -1,63 +1,88 @@
 import { Routes, Route, BrowserRouter } from "react-router-dom";
 //lazy import
-import { lazy, Suspense, ComponentType, useEffect } from "react";
+import { lazy, Suspense, ComponentType, useEffect, useState } from "react";
 import { LoaderScreen } from "./components/Loader/LoaderScreen";
 import { useAppStore } from "./store/appStore";
 import { configureAxios } from "./api/axiosInstance";
-
+import { PrivateRoute } from "./components/PrivateRoute";
+import { getSelfUserInfo } from "./api/user/userData";
 
 const Home = lazy<ComponentType>(() => import("./pages/home/index"));
 const Login = lazy<ComponentType>(() => import("./pages/Auth/Login"));
-const Solicitudes = lazy<ComponentType>(() => import("./pages/solicitudes/index"));
+const Solicitudes = lazy<ComponentType>(
+  () => import("./pages/solicitudes/index")
+);
 const Alertas = lazy<ComponentType>(() => import("./pages/alertas/index"));
 const Cobros = lazy<ComponentType>(() => import("./pages/cobros/index"));
 const Reportes = lazy<ComponentType>(() => import("./pages/reportes/index"));
-const Configuracion = lazy<ComponentType>(() =>
-  import("./pages/settings/index")
+const Configuracion = lazy<ComponentType>(
+  () => import("./pages/settings/index")
 );
-const AdministrarUsuarios = lazy<ComponentType>(() =>
-  import("./pages/adminUsuarios/index")
+const AdministrarUsuarios = lazy<ComponentType>(
+  () => import("./pages/adminUsuarios/index")
 );
-
+const ForgotPassword = lazy<ComponentType>(
+  () => import("./pages/Auth/PasswordRecovery")
+)
 
 function App() {
-  const { authToken, setTokenReady, setAuthToken } = useAppStore();
+  const { authToken, setTokenReady, setAuthToken, setUserInfo } = useAppStore();
+  const [localstorageChecked, setLocalStorageChecked] = useState(false);
 
   useEffect(() => {
-    if (
-      (!authToken || authToken === "") &&
-      window.location.pathname !== "/login"
-    ) {
-      window.location.href = "/login";
+    const savedToken = localStorage.getItem('authToken');
+    if (savedToken) {
+      setAuthToken(savedToken);
+    }
+    setLocalStorageChecked(true);
+  }, []);
+
+  const getUserData = async () => {
+    const res = await getSelfUserInfo()
+    if (res) {
+      setUserInfo(res.data)
+    }
+  }
+
+  useEffect(() => {
+    if (!localstorageChecked) return;
+
+    if (authToken && authToken !== '') {
+      localStorage.setItem('authToken', authToken);
+      configureAxios(() => {
+        localStorage.removeItem('authToken');
+        setAuthToken('');
+      });
+
+      getUserData()
+
+      setTokenReady(true);
+    } else {
       setTokenReady(false);
     }
-
-    if (authToken && authToken !== "") {
-      localStorage.setItem("authToken", authToken);
-      configureAxios(() => {
-        setAuthToken("");
-      });
-      setTokenReady(true);
-    }
-  }, [authToken]);
+  }, [authToken, localstorageChecked]);
 
   return (
     <BrowserRouter>
       <Suspense fallback={<LoaderScreen />}>
         <Routes>
-          <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/solicitudes" element={<Solicitudes />} />
-          <Route path="/cobros" element={<Cobros />} />
-          <Route path="/alertas" element={<Alertas />} />
-          <Route path="/reportes" element={<Reportes />} />
-          <Route path="/configuracion" element={<Configuracion />} />
-          <Route path="/administrar-usuarios" element={<AdministrarUsuarios />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route element={<PrivateRoute />}>
+            <Route path="/" element={<Home />} />
+            <Route path="/solicitudes" element={<Solicitudes />} />
+            <Route path="/cobros" element={<Cobros />} />
+            <Route path="/alertas" element={<Alertas />} />
+            <Route path="/reportes" element={<Reportes />} />
+            <Route path="/configuracion" element={<Configuracion />} />
+            <Route path="/administrar-usuarios" element={<AdministrarUsuarios />} />
+          </Route>
           <Route path="*" element={<Home />} />
         </Routes>
       </Suspense>
     </BrowserRouter>
   );
 }
+
 
 export default App;

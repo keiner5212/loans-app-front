@@ -1,4 +1,5 @@
 import axios from "axios";
+import { generateAppToken } from "../utils/security/appToken";
 
 const axiosInstance = axios.create({
     baseURL: import.meta.env.VITE_BACKEND_URL,
@@ -29,6 +30,7 @@ export function configureAxios(
         requestInterceptor = axiosInstance.interceptors.request.use(
             (config) => {
                 config.headers["Authorization"] = `Bearer ${token}`;
+                config.headers["X-App-Token"] = generateAppToken()
                 return config;
             },
             (error) => {

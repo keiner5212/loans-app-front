@@ -5,6 +5,7 @@ import { useAppStore } from "../../store/appStore";
 import { CiLogin } from "react-icons/ci";
 import { useNavigate } from "react-router-dom";
 import { Roles } from "../../constants/permisions/Roles";
+import { hasPermision } from "../../utils/security/Permisions";
 
 type Props = {
   children: ReactNode;
@@ -14,7 +15,7 @@ type Props = {
 export const Layout: FC<Props> = ({ children, loading = false }) => {
   const [title, setTitle] = useState<string>("");
   const [isAsideOpen, setIsAsideOpen] = useState<boolean>(false);
-  const { tokenReady, setAuthToken } = useAppStore();
+  const { tokenReady, setAuthToken, userInfo } = useAppStore();
 
   const sections = [
     {
@@ -61,6 +62,7 @@ export const Layout: FC<Props> = ({ children, loading = false }) => {
   }, [window.location.pathname]);
 
   const logout = () => {
+    localStorage.removeItem("authToken");
     setAuthToken("");
   };
 
@@ -83,7 +85,7 @@ export const Layout: FC<Props> = ({ children, loading = false }) => {
         <div className="main-content">
           <aside className={isAsideOpen ? "open" : "closed"}>
             <ul>
-              {sections.map((section, i) => (
+              {sections.map((section, i) => (hasPermision(userInfo.role, section.allowed) &&
                 <li
                   key={i}
                   className={title === section.title ? "active" : ""}

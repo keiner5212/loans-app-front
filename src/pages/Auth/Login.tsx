@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { login } from "../../api/auth";
 import { useAppStore } from "../../store/appStore";
 import SimpleModal from "../../components/modal/simpleModal/ModalSimple";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Loader } from "../../components/Loader";
 
 const Login = () => {
@@ -30,6 +30,7 @@ const Login = () => {
 
   const [loading, setLoading] = useState(false);
 
+
   const onSubmit = async (e: any) => {
     e.preventDefault();
 
@@ -39,6 +40,7 @@ const Login = () => {
 
     if (res) {
       setAuthToken(res.token);
+      localStorage.setItem("authToken", res.token);
       navigate("/");
     } else {
       setError({
@@ -85,7 +87,16 @@ const Login = () => {
             placeholder=""
             type="password"
             className="input"
-            onChange={onchange}
+            onChange={(e) => {
+              const input = e.target;
+              const value = input.value;
+              if (value.length < 5) {
+                input.setCustomValidity("La contraseña debe tener al menos 5 caracteres.");
+              } else {
+                input.setCustomValidity("");
+              }
+              onchange(e);
+            }}
             name="password"
           />
           <span>Password</span>
@@ -99,7 +110,7 @@ const Login = () => {
           )}
         </button>
         <p className="signin">
-          Olvidaste tu contraseña? <a href="#">Restablecela</a>{" "}
+          Olvidaste tu contraseña? <Link to="/forgot-password">Recuperar</Link>{" "}
         </p>
       </form>
     </div>

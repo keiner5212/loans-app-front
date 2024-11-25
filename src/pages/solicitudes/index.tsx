@@ -4,9 +4,14 @@ import "../../components/tabs/tabs.css";
 import "./solicitudes.css";
 import { FaCheck, FaTimes } from "react-icons/fa";
 import { openContent } from "../../components/tabs";
+import { useAppStore } from "../../store/appStore";
+import { TableContextProvider } from "../../components/Table/TableService";
+import { TableContainer } from "../../components/Table/TableContainer";
+import { TableHeaderType, TableRowType } from "../../components/Table/TableTypes";
 
 const Solicitudes: FC = () => {
   const defaultTabRef = useRef<HTMLButtonElement>(null);
+  const { theme } = useAppStore();
 
   useEffect(() => {
     if (defaultTabRef.current) {
@@ -20,12 +25,14 @@ const Solicitudes: FC = () => {
     document_type: "",
     document: "",
     phone: "",
+    edad: 0,
   });
 
   const [credit, setCredit] = useState({
     requestedAmount: "",
     interestRate: "",
     numberOfPayments: "",
+    yearsOfPayment: "",
   });
 
   const handleUserChange = (e: any) => {
@@ -60,7 +67,7 @@ const Solicitudes: FC = () => {
       interestRate: 7,
       numberOfPayments: 24,
       status: "aprobado",
-    },
+    }
   ];
 
   // Funciones para manejar aprobar y rechazar
@@ -74,7 +81,60 @@ const Solicitudes: FC = () => {
     // Lógica adicional para cambiar el estado en el backend...
   };
 
-  const [isAdmin, setIsAdmin] = useState(false);
+  const rowkeys = [
+    "id",
+    "requestedAmount",
+    "interestRate",
+    "numberOfPayments",
+  ]
+
+
+  const columnas = [
+    "ID",
+    "Monto Solicitado",
+    "Tasa de Interés",
+    "Número de cuotas"
+  ];
+
+  const headers: TableHeaderType[] = columnas.map((columna, index) => ({
+    content: {
+      Label: columna,
+    },
+    index,
+    sortable: true,
+    align: "center",
+    hoverEffect: true,
+    background: "#b7b7b7",
+    color: "#000",
+    bold: false,
+    sortMethod: undefined,
+    icon: undefined,
+    iconPosition: undefined,
+    classname: "",
+    tooltip: columna,
+  }))
+
+
+  const rows: TableRowType[] = solicitudes.map((fila: { [x: string]: any }) => ({
+    columns: rowkeys.map((columna) => ({
+      content: {
+        Label: fila[`${columna}`],
+        data: fila,
+      },
+      onClick(event) {
+        console.log(event);
+      },
+      background: "#fff",
+      color: "#000",
+      align: "left",
+      tooltip: columna.toString(),
+    })),
+    hoverEffect: true,
+    hoverType: "individual",
+    actions: [],
+    id: fila["id"].toString(),
+  }))
+
 
   return (
     <Layout>
@@ -103,8 +163,8 @@ const Solicitudes: FC = () => {
       <div id="sol_credito" className="tabcontent">
         <h3>Añadir solicitud de Crédito</h3>
 
-        <form onSubmit={handleSubmitSolCredito}>
-          <h4>Datos de usuario</h4>
+        <form onSubmit={handleSubmitSolCredito} className={theme} >
+          <h4 id="user-data-sub">Datos de usuario</h4>
           <div>
             <label>Nombre:</label>
             <input
@@ -112,6 +172,44 @@ const Solicitudes: FC = () => {
               name="name"
               value={user.name}
               onChange={handleUserChange}
+              required
+            />
+          </div>
+          <div>
+            <label>Edad:</label>
+            <input
+              type="number"
+              name="edad"
+              value={user.edad}
+              onChange={handleUserChange}
+              required
+            />
+          </div>
+          <div>
+            <label>Ubicacion (croquis):</label>
+            <input
+              type="file"
+              required
+            />
+          </div>
+          <div>
+            <label>Documento (cara de frente):</label>
+            <input
+              type="file"
+              required
+            />
+          </div>
+          <div>
+            <label>Documento (cara de atras):</label>
+            <input
+              type="file"
+              required
+            />
+          </div>
+          <div>
+            <label>Constancia de ingresos:</label>
+            <input
+              type="file"
               required
             />
           </div>
@@ -156,7 +254,7 @@ const Solicitudes: FC = () => {
             />
           </div>
 
-          <h4>Datos de solicitud</h4>
+          <h4 id="request-data-sub">Datos de solicitud</h4>
           <div>
             <label>Monto solicitado:</label>
             <input
@@ -178,13 +276,31 @@ const Solicitudes: FC = () => {
             />
           </div>
           <div>
-            <label>Número de pagos:</label>
+            <label>Tiempo de pago (años):</label>
             <input
               type="number"
+              name="yearsOfPayment"
+              value={credit.yearsOfPayment}
+              onChange={handleCreditChange}
+              required
+            />
+          </div>
+          <div>
+            <label>Forma de pago:</label>
+            <select name="paymentMethod">
+              <option value="mensual">Mensual</option>
+              <option value="semanal">Semanal</option>
+              <option value="quincenal">Quincenal</option>
+            </select>
+          </div>
+          <div>
+            <label>Número de cuotas:</label>
+            <input
+              type="number"
+              disabled
               name="numberOfPayments"
               value={credit.numberOfPayments}
               onChange={handleCreditChange}
-              required
             />
           </div>
 
@@ -195,8 +311,8 @@ const Solicitudes: FC = () => {
       <div id="sol_financiamiento" className="tabcontent">
         <h3>Añadir solicitud de Financiamiento</h3>
 
-        <form onSubmit={handleSubmitSolCredito}>
-          <h4>Datos de usuario</h4>
+        <form onSubmit={handleSubmitSolCredito} className={theme} >
+          <h4 id="user-data-sub">Datos de usuario</h4>
           <div>
             <label>Nombre:</label>
             <input
@@ -204,6 +320,44 @@ const Solicitudes: FC = () => {
               name="name"
               value={user.name}
               onChange={handleUserChange}
+              required
+            />
+          </div>
+          <div>
+            <label>Edad:</label>
+            <input
+              type="number"
+              name="edad"
+              value={user.edad}
+              onChange={handleUserChange}
+              required
+            />
+          </div>
+          <div>
+            <label>Ubicacion (croquis):</label>
+            <input
+              type="file"
+              required
+            />
+          </div>
+          <div>
+            <label>Documento (cara de frente):</label>
+            <input
+              type="file"
+              required
+            />
+          </div>
+          <div>
+            <label>Documento (cara de atras):</label>
+            <input
+              type="file"
+              required
+            />
+          </div>
+          <div>
+            <label>Constancia de ingresos:</label>
+            <input
+              type="file"
               required
             />
           </div>
@@ -248,7 +402,7 @@ const Solicitudes: FC = () => {
             />
           </div>
 
-          <h4>Datos de solicitud</h4>
+          <h4 id="request-data-sub">Datos de solicitud</h4>
           <div>
             <label>Vehiculo Solicitado:</label>
             <input
@@ -280,94 +434,54 @@ const Solicitudes: FC = () => {
             />
           </div>
           <div>
-            <label>Número de pagos:</label>
+            <label>Tiempo de pago (años):</label>
             <input
               type="number"
-              name="numberOfPayments"
-              value={credit.numberOfPayments}
+              name="yearsOfPayment"
+              value={credit.yearsOfPayment}
               onChange={handleCreditChange}
               required
             />
           </div>
-
+          <div>
+            <label>Forma de pago:</label>
+            <select name="paymentMethod">
+              <option value="mensual">Mensual</option>
+              <option value="semanal">Semanal</option>
+              <option value="quincenal">Quincenal</option>
+            </select>
+          </div>
+          <div>
+            <label>Número de cuotas:</label>
+            <input
+              type="number"
+              disabled
+              name="numberOfPayments"
+              value={credit.numberOfPayments}
+              onChange={handleCreditChange}
+            />
+          </div>
           <button type="submit">Enviar solicitud</button>
         </form>
       </div>
 
       <div id="admin_solicitudes" className="tabcontent">
-        <button onClick={() => setIsAdmin(!isAdmin)}>cambiar modo</button>
         <h3>Lista de Solicitudes</h3>
-        <ul style={{ listStyleType: "none", padding: 0 }}>
-          {solicitudes.map((solicitud) => (
-            <li
-              key={solicitud.id}
-              style={{
-                marginBottom: "20px",
-                padding: "15px",
-                border: "1px solid #ddd",
-                borderRadius: "5px",
-              }}
-            >
-              <p>
-                <strong>Monto Solicitado:</strong> ${solicitud.requestedAmount}
-              </p>
-              <p>
-                <strong>Tasa de Interés:</strong> {solicitud.interestRate}%
-              </p>
-              <p>
-                <strong>Número de Pagos:</strong> {solicitud.numberOfPayments}
-              </p>
 
-              {isAdmin ? (
-                // Vista para el administrador
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                  }}
-                >
-                  <p>
-                    <strong>Estado:</strong> {solicitud.status}
-                  </p>
-                  <div>
-                    <button
-                      style={{
-                        marginRight: "10px",
-                        backgroundColor: "#28a745",
-                        color: "white",
-                        padding: "8px",
-                        border: "none",
-                        borderRadius: "5px",
-                        cursor: "pointer",
-                      }}
-                      onClick={() => handleApprove(solicitud.id)}
-                    >
-                      <FaCheck /> Aprobar
-                    </button>
-                    <button
-                      style={{
-                        backgroundColor: "#dc3545",
-                        color: "white",
-                        padding: "8px",
-                        border: "none",
-                        borderRadius: "5px",
-                        cursor: "pointer",
-                      }}
-                      onClick={() => handleReject(solicitud.id)}
-                    >
-                      <FaTimes /> Rechazar
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <p>
-                  <strong>Estado de tu solicitud:</strong> {solicitud.status}
-                </p>
-              )}
-            </li>
-          ))}
-        </ul>
+        <TableContextProvider>
+          <TableContainer
+            headers={headers}
+            rows={rows}
+            isSticky={true}
+            maxHeight="60vh"
+            // indexed={true}
+            loading={false}
+            loader={null}
+            indexColHeaderColor="#000"
+            indexColHeaderBackgroundColor="#b7b7b7"
+            roundedCorners={true}
+          />
+        </TableContextProvider>
       </div>
     </Layout>
   );

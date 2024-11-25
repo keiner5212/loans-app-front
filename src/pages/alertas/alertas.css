@@ -14,20 +14,6 @@
   text-align: left;
 }
 
-.overdue-table button {
-  margin-right: 5px;
-  padding: 5px 10px;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  cursor: pointer;
-  border-radius: 5px;
-}
-
-.overdue-table button:hover {
-  background-color: #0056b3;
-}
-
 .credit-details {
   margin-top: 20px;
   padding: 15px;

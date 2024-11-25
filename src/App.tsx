@@ -33,6 +33,8 @@ function App() {
     const savedToken = localStorage.getItem('authToken');
     if (savedToken) {
       setAuthToken(savedToken);
+    }else{
+      setTokenReady(true);
     }
     setLocalStorageChecked(true);
   }, []);

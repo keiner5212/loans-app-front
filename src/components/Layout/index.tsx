@@ -1,4 +1,4 @@
-import { FC, ReactNode, useEffect, useState } from "react";
+import { FC, ReactNode, useEffect, useRef, useState } from "react";
 import "./layout.css";
 import { LoaderScreen } from "../Loader/LoaderScreen";
 import { useAppStore } from "../../store/appStore";
@@ -6,6 +6,7 @@ import { CiLogin } from "react-icons/ci";
 import { useNavigate } from "react-router-dom";
 import { Roles } from "../../constants/permisions/Roles";
 import { hasPermision } from "../../utils/security/Permisions";
+import { FaUser } from "react-icons/fa";
 
 type Props = {
   children: ReactNode;
@@ -15,7 +16,7 @@ type Props = {
 export const Layout: FC<Props> = ({ children, loading = false }) => {
   const [title, setTitle] = useState<string>("");
   const [isAsideOpen, setIsAsideOpen] = useState<boolean>(false);
-  const { tokenReady, setAuthToken, userInfo } = useAppStore();
+  const { tokenReady, setAuthToken, userInfo, theme, setTheme } = useAppStore();
 
   const sections = [
     {
@@ -66,35 +67,60 @@ export const Layout: FC<Props> = ({ children, loading = false }) => {
     setAuthToken("");
   };
 
+  const themeswitchRef = useRef(null);
+  useEffect(() => {
+    if (themeswitchRef.current) {
+      (themeswitchRef.current as HTMLInputElement).checked = theme === "dark";
+    }
+  }, []);
+
   return (
-    <div className="layout">
+    <div className={"layout" + " " + theme}>
       <div className="content">
         <header>
-          <label className="burger" htmlFor="burger">
-            <input
-              type="checkbox"
-              id="burger"
-              onChange={() => setIsAsideOpen(!isAsideOpen)}
-            />
-            <span></span>
-            <span></span>
-            <span></span>
-          </label>
-          <h1>{title}</h1>
+          <div className="header-left">
+            <label className="burger" htmlFor="burger">
+              <input
+                type="checkbox"
+                id="burger"
+                onChange={() => setIsAsideOpen(!isAsideOpen)}
+              />
+              <span className={theme}></span>
+              <span className={theme}></span>
+              <span className={theme}></span>
+            </label>
+            <h1>{title}</h1>
+          </div>
+          <div className="user-info">
+            <FaUser />
+            <span>{userInfo.name}</span>
+            <div className="switch">
+              <label className="ui-switch">
+                <input type="checkbox"
+                  ref={themeswitchRef}
+                  onClick={(e) => {
+                    setTheme((e.target as HTMLInputElement).checked ? "dark" : "light");
+                  }} />
+                <div className="slider">
+                  <div className="circle"></div>
+                </div>
+              </label>
+            </div>
+          </div>
         </header>
         <div className="main-content">
-          <aside className={isAsideOpen ? "open" : "closed"}>
+          <aside className={(isAsideOpen ? "open" : "closed") + " " + theme}>
             <ul>
               {sections.map((section, i) => (hasPermision(userInfo.role, section.allowed) &&
                 <li
                   key={i}
-                  className={title === section.title ? "active" : ""}
+                  className={(title === section.title ? "active" : "") + " " + theme}
                   onClick={() => navigate(section.url)}
                 >
                   <span>{section.title}</span>
                 </li>
               ))}
-              <li className="signout" onClick={logout}>
+              <li className={"signout" + " " + theme} onClick={logout}>
                 <span className="aside-icon">
                   <CiLogin />
                 </span>

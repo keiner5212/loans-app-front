@@ -19,7 +19,9 @@ export type AppStore = {
     tokenReady: boolean;
     setTokenReady: (tokenReady: boolean) => void;
     userInfo: UserInfo;
-    setUserInfo: (userInfo: UserInfo) => void
+    setUserInfo: (userInfo: UserInfo) => void;
+    theme: string;
+    setTheme: (theme: string) => void;
 };
 
 export const useAppStore = create<AppStore>((set) => ({
@@ -36,5 +38,7 @@ export const useAppStore = create<AppStore>((set) => ({
                 ...userInfoPayload
             }
         }
-    })
+    }),
+    theme: "light",
+    setTheme: (theme: string) => set((state) => ({ ...state, theme }))
 }));

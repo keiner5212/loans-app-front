@@ -1,12 +1,3 @@
-
-form {
-  margin-top: 10px;
-  margin-bottom: 10px;
-  width: 30%;
-  display: flex;
-  flex-direction: column;
-}
-
 form div {
   margin-bottom: 15px;
 }
@@ -19,12 +10,15 @@ label {
 }
 
 input[type="text"],
+select,
+input[type="file"],
 input[type="email"],
 input[type="number"],
 input[type="tel"] {
   width: 100%;
   padding: 10px;
   margin-top: 5px;
+  color: #000 !important;
   border-radius: 5px;
   border: 1px solid #ccc;
   font-size: 16px;
@@ -34,25 +28,12 @@ input[type="tel"] {
 input[type="text"]:focus,
 input[type="email"]:focus,
 input[type="number"]:focus,
+select:focus,
 input[type="tel"]:focus {
   outline: none;
   border-color: #007bff;
 }
 
-button {
-  padding: 10px 15px;
-  background-color: #007bff;
-  color: white;
-  font-size: 16px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-button:hover {
-  background-color: #0056b3;
-}
 
 button:focus {
   outline: none;
@@ -70,4 +51,32 @@ button:focus {
   button {
     font-size: 14px;
   }
+}
+
+
+form.dark * {
+  color: #fff;
+}
+
+select * {
+  color: #000 !important;
+}
+
+#sol_credito form,
+#sol_financiamiento form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+
+  & button {
+    align-self: center;
+  }
+}
+
+#request-data-sub {
+  grid-area: 7 / 1 / 8 / 3;
+}
+
+#user-data-sub {
+  grid-area: 1 / 1 / 2 / 3;
 }

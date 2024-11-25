@@ -1,5 +1,5 @@
 body,
-html, 
+html,
 #root {
   margin: 0;
   padding: 0;
@@ -11,4 +11,21 @@ html,
 
 * {
   box-sizing: border-box;
+}
+
+button {
+  background-color: #3f649ef4;
+  color: white;
+  padding: 10px 15px;
+  margin: 5px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-right: 10px;
+  transition: all 0.3s ease;
+}
+
+button:hover:not(.tab) {
+  background-color: #2f5084f4;
+  transform: scale(1.03);
 }

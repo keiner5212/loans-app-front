@@ -8,7 +8,6 @@ import "./settings.css"
 const Configuracion: FC = () => {
     const defaultTabRef = useRef<HTMLButtonElement>(null);
     const [frecuenciaAlertas, setFrecuenciaAlertas] = useState("Diaria");
-    const [modoOscuro, setModoOscuro] = useState(false);
     const [firma, setFirma] = useState<File | null>(null);
     const [error, setError] = useState({ title: "", message: "", isOpen: false });
 
@@ -20,8 +19,6 @@ const Configuracion: FC = () => {
 
     const guardarConfiguraciones = () => {
         if (firma) {
-            // Aquí podrías implementar la lógica para guardar la firma
-            console.log("Configuraciones guardadas:", { frecuenciaAlertas, modoOscuro, firma });
             setError({
                 title: "Éxito",
                 message: "Las configuraciones se han guardado correctamente.",
@@ -61,16 +58,6 @@ const Configuracion: FC = () => {
                         <option value="Semanal">Semanal</option>
                         <option value="Mensual">Mensual</option>
                     </select>
-                </div>
-                <div>
-                    <label>
-                        <input
-                            type="checkbox"
-                            checked={modoOscuro}
-                            onChange={() => setModoOscuro(!modoOscuro)}
-                        />
-                        Activar Modo Oscuro
-                    </label>
                 </div>
                 <div>
                     <label>Subir Firma:</label>

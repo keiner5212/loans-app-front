@@ -5,19 +5,26 @@
     justify-content: center;
     height: 100%;
     text-align: center;
-    background-color: #f9fafc;
     padding: 20px;
+    &.dark{
+      color: #fff;
+      background-color: #171e24;
+
+      & *{
+        color: #fff;
+      }
+    }
   }
   
   .home-title {
     font-size: 2.5rem;
-    color: #2c3e50;
+    color: #1d2a37;
     margin-bottom: 10px;
   }
   
   .home-message {
     font-size: 1.2rem;
-    color: #7f8c8d;
+    color: #687272;
     line-height: 1.6;
   }
   

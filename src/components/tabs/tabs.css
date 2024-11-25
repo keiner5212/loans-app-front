@@ -1,12 +1,13 @@
 .tab {
   overflow: hidden;
   border: 1px solid #ccc;
-  background-color: #f1f1f1;
+  background-color: #f1f1f196;
 }
 
 .tab button {
   background-color: inherit;
   float: left;
+  background-color: transparent;
   color: #222;
   border: none;
   outline: none;
@@ -15,12 +16,9 @@
   transition: 0.3s;
 }
 
-.tab button:hover {
-  background-color: #ddd;
-}
 
 .tab button.active {
-  background-color: #ccc;
+  background-color: #3f649ef4;
 }
 
 .tabcontent {
@@ -32,12 +30,14 @@
   align-items: center;
   padding: 16px 12px;
   animation: fadeEffect 1s;
+  scrollbar-color: #cacaca transparent;
 }
 
 @keyframes fadeEffect {
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }

@@ -2,6 +2,7 @@ import { FC, useEffect, useRef, useState } from "react";
 import { Layout } from "../../components/Layout";
 import "../../components/tabs/tabs.css";
 import { openContent } from "../../components/tabs";
+import "./cobros.css";
 
 const Cobros: FC = () => {
   const defaultTabRef = useRef<HTMLButtonElement>(null);
@@ -50,43 +51,30 @@ const Cobros: FC = () => {
         </button>
       </div>
 
-      {/* Primera Tab - Añadir/Realizar Cobro */}
       <div id="cobro_credito" className="tabcontent">
         <h3>Añadir/Realizar Cobro</h3>
-        <div style={{ marginBottom: "20px" }}>
+        <div className="search-container">
           <label>Buscar usuario por ID: </label>
           <input
             type="text"
             value={userId}
             onChange={(e) => setUserId(e.target.value)}
             placeholder="Ingresa ID de usuario"
-            style={{ marginRight: "10px", padding: "5px", borderRadius: "5px", border: "1px solid #ccc" }}
           />
-          <button
-            onClick={handleSearchUser}
-            style={{ padding: "5px 10px", backgroundColor: "#007bff", color: "white", border: "none", borderRadius: "5px" }}
-          >
+          <button onClick={handleSearchUser} className="btn btn-primary">
             Buscar
           </button>
         </div>
 
         {selectedSolicitud && (
-          <div style={{ border: "1px solid #ccc", padding: "15px", borderRadius: "5px" }}>
+          <div className="solicitud-container">
             <h4>Solicitud de Crédito</h4>
             <p><strong>Monto Solicitado:</strong> ${selectedSolicitud.requestedAmount}</p>
             <p><strong>Monto Pagado:</strong> ${selectedSolicitud.paidAmount}</p>
             <p><strong>Saldo Pendiente:</strong> ${selectedSolicitud.remainingAmount}</p>
             <p><strong>Cuotas Pagadas:</strong> {selectedSolicitud.payments}/{selectedSolicitud.totalPayments}</p>
-            <button
-              style={{ padding: "5px 10px", backgroundColor: "#28a745", color: "white", border: "none", borderRadius: "5px", marginRight: "10px" }}
-            >
-              Generar Recibo
-            </button>
-            <button
-              style={{ padding: "5px 10px", backgroundColor: "#007bff", color: "white", border: "none", borderRadius: "5px" }}
-            >
-              Realizar Cobro
-            </button>
+            <button className="btn btn-success">Generar Recibo</button>
+            <button className="btn btn-primary">Realizar Cobro</button>
           </div>
         )}
       </div>
@@ -94,9 +82,9 @@ const Cobros: FC = () => {
       {/* Segunda Tab - Administrar Pagos */}
       <div id="admin_pagos" className="tabcontent">
         <h3>Administrar Pagos</h3>
-        <ul style={{ listStyleType: "none", padding: 0 }}>
+        <ul className="solicitudes-list">
           {solicitudesDemo.map((solicitud) => (
-            <li key={solicitud.id} style={{ marginBottom: "20px", padding: "15px", border: "1px solid #ddd", borderRadius: "5px" }}>
+            <li key={solicitud.id} className="solicitud-item">
               <p><strong>Solicitud ID:</strong> {solicitud.id}</p>
               <p><strong>Monto Solicitado:</strong> ${solicitud.requestedAmount}</p>
               <p><strong>Monto Pagado:</strong> ${solicitud.paidAmount}</p>

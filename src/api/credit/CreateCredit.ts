@@ -5,7 +5,7 @@ export async function CreateCredit(creditData: any): Promise<any | undefined> {
         const response = await axiosInstance.post('/api/v1/credit/', creditData);
         return response.data
     } catch (error: any) {
-        console.error('Error creando el usuario:', error.response?.data || error.message);
+        console.error('Error creando el prestamo:', error.response?.data || error.message);
     }
 }
 
@@ -14,6 +14,6 @@ export async function CreateFinancing(financingData: any): Promise<any | undefin
         const response = await axiosInstance.post('/api/v1/financing/', financingData);
         return response.data
     } catch (error: any) {
-        console.error('Error creando el usuario:', error.response?.data || error.message);
+        console.error('Error creando el financiamiento:', error.response?.data || error.message);
     }
 }

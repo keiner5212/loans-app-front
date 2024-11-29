@@ -1,4 +1,4 @@
-import { FunctionComponent, ReactNode, useState } from "react";
+import { FunctionComponent, ReactNode, useEffect, useState } from "react";
 import "./TableContainer.css";
 import {
   TableContentIndvidual,
@@ -38,6 +38,10 @@ export const TableContainer: FunctionComponent<TableContainerProps> = ({
   roundedCorners,
 }) => {
   const [rowsOrdered, setRowsOrdered] = useState<TableRowType[]>(rows);
+
+  useEffect(() => {
+    setRowsOrdered(rows);
+  }, [rows]);
 
   const sortItemsHandler = (
     callback: (

@@ -7,7 +7,7 @@ import { openContent } from "../../components/tabs";
 import { useAppStore } from "../../store/appStore";
 import { TableContextProvider } from "../../components/Table/TableService";
 import { TableContainer } from "../../components/Table/TableContainer";
-import { TableHeaderType, TableRowType } from "../../components/Table/TableTypes";
+import { TableContentIndvidual, TableHeaderType, TableRowType } from "../../components/Table/TableTypes";
 import { hasPermision } from "../../utils/security/Permisions";
 import { Roles } from "../../constants/permisions/Roles";
 import { Loader } from "../../components/Loader";
@@ -19,10 +19,35 @@ import { CreateUser } from "../../api/user/CreateUser";
 import LoaderModal from "../../components/modal/Loader/LoaderModal";
 import { deleteFile } from "../../api/files/DeleteFiles";
 import { CreateCredit, CreateFinancing } from "../../api/credit/CreateCredit";
-import { Status } from "../../constants/credits/Credit";
+import { CreditType, Status } from "../../constants/credits/Credit";
+import { FilterPortal } from "./FilterPortal";
+import { GetCredits } from "../../api/credit/GetCredits";
+import { formatUtcToLocal } from "../../utils/date/formatToLocal";
+import { AproveCredit, DeclineCredit } from "../../api/credit/ChangeStatus";
 
 const Solicitudes: FC = () => {
   const [loadingRequest, setLoadingRequest] = useState(false);
+  const [search, setSearch] = useState("");
+  const [solicitudes, setSolicitudes] = useState<any[]>([]);
+  const [solicitudesBack, setSolicitudesBack] = useState<any[]>([]);
+  const [rows, setRows] = useState<TableRowType[]>([]);
+  const [showFilterBox, setShowFilterBox] = useState(false);
+  const [selectedFilter, setSelectedFilter] = useState({
+    type: "",
+    status: "",
+  });
+
+  const toggleFilterBox = () => {
+    setShowFilterBox(!showFilterBox);
+  };
+
+  const handleFilterChange = (e: any) => {
+    const { name, value } = e.target;
+    setSelectedFilter((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
   const closeModal = () => {
     setModalData({
       isOpen: false,
@@ -53,7 +78,28 @@ const Solicitudes: FC = () => {
       defaultTabRef.current.click();
     }
     getConfig(Config.INTEREST_RATE).then((res) => setInterestRate(parseFloat(res?.data.value) * 100));
+    GetCredits().then((res) => {
+      setSolicitudes(res.data)
+      setSolicitudesBack(res.data)
+    });
   }, []);
+
+  useEffect(() => {
+    let actualList = solicitudesBack
+    if (selectedFilter.type && selectedFilter.type !== "") {
+      actualList = actualList.filter((solicitud: any) => solicitud.creditType == selectedFilter.type);
+    }
+    if (selectedFilter.status && selectedFilter.status !== "") {
+      actualList = actualList.filter((solicitud: any) => solicitud.status == selectedFilter.status);
+    }
+    if (search && search !== "") {
+      actualList = actualList.filter((solicitud: any) =>
+        JSON.stringify(solicitud).toLowerCase().includes(search.toLowerCase())
+      );
+    }
+    setSolicitudes(actualList);
+  }, [selectedFilter, search]);
+
 
   const [user, setUser] = useState<any>({
     name: undefined,
@@ -341,6 +387,7 @@ const Solicitudes: FC = () => {
         period: credit.period,
         status: Status.PENDING,
         applicationDate: new Date().toUTCString(),
+        creditType: CreditType.CREDIT,
       });
 
       setUser({
@@ -362,7 +409,7 @@ const Solicitudes: FC = () => {
         yearsOfPayment: 0
       })
       forCreditoref.current?.reset();
-
+      forFinancingref.current?.reset();
       setLoadingRequest(false);
       setModalData({
         isOpen: true,
@@ -510,6 +557,7 @@ const Solicitudes: FC = () => {
         period: financing.period,
         status: Status.PENDING,
         applicationDate: new Date().toUTCString(),
+        creditType: CreditType.FINANCING,
       });
 
       if (creditRes) {
@@ -545,7 +593,7 @@ const Solicitudes: FC = () => {
         vehicleVIN: "",
       })
       forCreditoref.current?.reset();
-
+      forFinancingref.current?.reset();
       setLoadingRequest(false);
 
       setModalData({
@@ -564,48 +612,61 @@ const Solicitudes: FC = () => {
 
   };
 
-  const solicitudes = [
-    {
-      id: 1,
-      userId: 101,
-      requestedAmount: 5000,
-      interestRate: 5,
-      numberOfPayments: 12,
-      status: "pendiente",
-    },
-    {
-      id: 2,
-      userId: 102,
-      requestedAmount: 10000,
-      interestRate: 7,
-      numberOfPayments: 24,
-      status: "aprobado",
-    }
-  ];
-
   const handleApprove = (id: number) => {
-    console.log(`Solicitud ${id} aprobada`);
+    setLoadingRequest(true);
+    AproveCredit(id).then(() => {
+      let edited: any = solicitudes.find((solicitud: any) => solicitud.id === id);
+      if (edited) {
+        edited.status = Status.APPROVED
+        const filteredSolicitudes: any[] = solicitudes.filter((solicitud: any) => solicitud.id !== id);
+        setSolicitudes([...filteredSolicitudes, edited]);
+        const filteredSolicitudesBack: any[] = solicitudesBack.filter((solicitud: any) => solicitud.id !== id);
+        setSolicitudesBack([...filteredSolicitudesBack, edited]);
+      }
+      setLoadingRequest(false)
+    });
   };
 
   const handleReject = (id: number) => {
-    console.log(`Solicitud ${id} rechazada`);
+    setLoadingRequest(true);
+    DeclineCredit(id).then(() => {
+      let edited: any = solicitudes.find((solicitud: any) => solicitud.id === id);
+      if (edited) {
+        edited.status = Status.REJECTED
+        const filteredSolicitudes: any[] = solicitudes.filter((solicitud: any) => solicitud.id !== id);
+        setSolicitudes([...filteredSolicitudes, edited]);
+        const filteredSolicitudesBack: any[] = solicitudesBack.filter((solicitud: any) => solicitud.id !== id);
+        setSolicitudesBack([...filteredSolicitudesBack, edited]);
+      }
+      setLoadingRequest(false)
+    });
   };
 
   const rowkeys = [
     "id",
+    "userId",
+    "creditType",
+    "userCreatorId",
     "requestedAmount",
     "interestRate",
+    "yearsOfPayment",
+    "period",
     "status",
-    "numberOfPayments",
+    "applicationDate"
   ]
 
 
   const columnas = [
     "ID",
-    "Monto Solicitado",
-    "Tasa de Interés",
+    "ID de usuario",
+    "Tipo de credito",
+    "ID del creador",
+    "Monto solicitado",
+    "Tasa de interes",
+    "Cantidad de años",
+    "Periodo",
     "Estado",
-    "Número de cuotas"
+    "Fecha de solicitud"
   ];
 
   const headers: TableHeaderType[] = columnas.map((columna, index) => ({
@@ -626,49 +687,58 @@ const Solicitudes: FC = () => {
     tooltip: columna,
   }))
 
-
-  const rows: TableRowType[] = solicitudes.map((fila: { [x: string]: any }) => ({
-    columns: rowkeys.map((columna) => ({
-      content: {
-        Label: fila[`${columna}`],
-        data: fila,
-      },
-      onClick(event) {
-        console.log(event);
-      },
-      background: "#fff",
-      color: "#000",
-      align: "left",
-      tooltip: columna.toString(),
-    })),
-    hoverEffect: true,
-    hoverType: "individual",
-    // only admins can approve or reject
-    actions: hasPermision(userInfo?.role, Roles.USER_ADMIN) ? [
-      {
-        label: "Aprobar",
-        icon: <FaCheck />,
-        onClick: () => handleApprove(fila["id"]),
-        background: "#5cff67",
-        color: theme === "dark" ? "#fff" : "#000",
-      },
-      {
-        label: "Rechazar",
-        icon: <FaTimes />,
-        onClick: () => handleReject(fila["id"]),
-        background: "#ff5c64",
-        color: theme === "dark" ? "#fff" : "#000",
-      },
-    ] : [],
-    id: fila["id"].toString(),
-  }))
-
-
-
-
-
-
-
+  useEffect(() => {
+    setRows(
+      solicitudes.map((fila: { [x: string]: any }) => {
+        const temp: TableRowType = {
+          columns: rowkeys.map((columna) => {
+            const tempCol = ({
+              content: {
+                Label: fila[`${columna}`],
+                data: fila,
+              },
+              onClick(event: any) {
+                console.log(event);
+              },
+              background: "#fff",
+              color: "#000",
+              align: "left",
+              tooltip: fila[`${columna}`].toString(),
+            })
+            if (columna === "applicationDate") {
+              const dateFormatted = formatUtcToLocal(fila["applicationDate"], import.meta.env.VITE_LOCALE,
+                import.meta.env.VITE_TIMEZONE
+              )
+              tempCol.content.Label = dateFormatted;
+              tempCol.tooltip = dateFormatted;
+            }
+            return tempCol
+          }) as TableContentIndvidual[],
+          hoverEffect: true,
+          hoverType: "individual",
+          actions: (hasPermision(userInfo?.role, Roles.USER_ADMIN) &&
+            fila["status"] === Status.PENDING) ? [
+            {
+              label: "Aprobar",
+              icon: <FaCheck />,
+              onClick: () => handleApprove(fila["id"]),
+              background: "#5cff67",
+              color: theme === "dark" ? "#fff" : "#000",
+            },
+            {
+              label: "Rechazar",
+              icon: <FaTimes />,
+              onClick: () => handleReject(fila["id"]),
+              background: "#ff5c64",
+              color: theme === "dark" ? "#fff" : "#000",
+            },
+          ] : [],
+          id: fila["id"].toString(),
+        }
+        return temp
+      })
+    )
+  }, [solicitudes]);
 
 
 
@@ -1094,26 +1164,48 @@ const Solicitudes: FC = () => {
 
       <div id="admin_solicitudes" className={"tabcontent " + theme}>
         <h3>Lista de Solicitudes</h3>
-
+        <div className="filter-search-container">
+          <input
+            type="text"
+            placeholder="Buscar solicitud..."
+            className="search-input"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+          <button className="filter-button" onClick={toggleFilterBox}>
+            Filtros
+          </button>
+        </div>
+        <FilterPortal
+          clearFilter={() => setSelectedFilter({
+            type: "",
+            status: "",
+          })}
+          show={showFilterBox}
+          onClose={toggleFilterBox}
+          selectedFilter={selectedFilter}
+          onFilterChange={handleFilterChange}
+        />
         <TableContextProvider>
           <TableContainer
             headers={headers}
             rows={rows}
             isSticky={true}
             maxHeight="60vh"
-            // indexed={true}
+            indexed={false}
             loading={false}
-            loader={<div style={
-              {
-                padding: "20px",
-                width: "100%",
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center"
-              }
-            }>
-              <Loader size="40px" />
-            </div>
+            loader={
+              <div
+                style={{
+                  padding: "20px",
+                  width: "100%",
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <Loader size="40px" />
+              </div>
             }
             roundedCorners={true}
           />

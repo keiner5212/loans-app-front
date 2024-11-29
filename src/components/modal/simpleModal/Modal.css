@@ -51,7 +51,7 @@
   justify-content: center;
   align-items: center;
   backdrop-filter: blur(8px);
-  z-index: 1000;
+  z-index: 100000;
   opacity: 0;
   animation: fadeOut 0.3s forwards; /* Animación por defecto (fadeOut) */
 }
@@ -63,6 +63,7 @@
 /* Contenedor del modal */
 .modal-container {
   background-color: white;
+  color: #000;
   padding: 20px;
   border-radius: 10px;
   max-width: 500px;

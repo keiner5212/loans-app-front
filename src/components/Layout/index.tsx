@@ -51,6 +51,18 @@ export const Layout: FC<Props> = ({ children, loading = false }) => {
     },
   ];
 
+  useEffect(() => {
+    //get theme from localstorage and set it
+    const themesaved = localStorage.getItem("theme");
+    if (themesaved) {
+      setTheme(themesaved)
+
+      if (themeswitchRef.current) {
+        (themeswitchRef.current as HTMLInputElement).checked = themesaved === "dark";
+      }
+    };
+  }, []);
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -68,11 +80,6 @@ export const Layout: FC<Props> = ({ children, loading = false }) => {
   };
 
   const themeswitchRef = useRef(null);
-  useEffect(() => {
-    if (themeswitchRef.current) {
-      (themeswitchRef.current as HTMLInputElement).checked = theme === "dark";
-    }
-  }, []);
 
   return (
     <div className={"layout" + " " + theme}>
@@ -99,7 +106,9 @@ export const Layout: FC<Props> = ({ children, loading = false }) => {
                 <input type="checkbox"
                   ref={themeswitchRef}
                   onClick={(e) => {
-                    setTheme((e.target as HTMLInputElement).checked ? "dark" : "light");
+                    const ischecked = (e.target as HTMLInputElement).checked;
+                    setTheme(ischecked ? "dark" : "light");
+                    localStorage.setItem("theme", ischecked ? "dark" : "light");
                   }} />
                 <div className="slider">
                   <div className="circle"></div>

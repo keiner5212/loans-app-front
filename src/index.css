@@ -25,7 +25,7 @@ button {
   transition: all 0.3s ease;
 }
 
-button:hover:not(.tab) {
+button:hover {
   background-color: #2f5084f4;
   transform: scale(1.03);
 }

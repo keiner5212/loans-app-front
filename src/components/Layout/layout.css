@@ -38,17 +38,9 @@ main {
   width: 100%;
   max-height: calc(100vh - 55px);
 
-  /* scroll background transparend */
-
-
-  &::-webkit-scrollbar-thumb {
-    background: #ff3030;
-    width: 100px;
-  }
-
-  &::-webkit-scrollbar-track {
-    background: #30bb42;
-    width: 100px;
+  &.dark {
+    color: #fff;
+    background-color: #171e24;
   }
 }
 

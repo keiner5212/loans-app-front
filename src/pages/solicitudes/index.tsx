@@ -1,8 +1,8 @@
-import { FC, useEffect, useRef, useState } from "react";
+import { FC, useCallback, useEffect, useRef, useState } from "react";
 import { Layout } from "../../components/Layout";
 import "../../components/tabs/tabs.css";
 import "./solicitudes.css";
-import { FaCheck, FaTimes } from "react-icons/fa";
+import { FaCheck, FaEye, FaTimes } from "react-icons/fa";
 import { openContent } from "../../components/tabs";
 import { useAppStore } from "../../store/appStore";
 import { TableContextProvider } from "../../components/Table/TableService";
@@ -24,6 +24,9 @@ import { FilterPortal } from "./FilterPortal";
 import { GetCredits } from "../../api/credit/GetCredits";
 import { formatUtcToLocal } from "../../utils/date/formatToLocal";
 import { AproveCredit, DeclineCredit } from "../../api/credit/ChangeStatus";
+import { useNavigate } from "react-router-dom";
+import { debounce } from "lodash";
+import { FiRefreshCw } from "react-icons/fi";
 
 const Solicitudes: FC = () => {
   const [loadingRequest, setLoadingRequest] = useState(false);
@@ -83,6 +86,19 @@ const Solicitudes: FC = () => {
       setSolicitudesBack(res.data)
     });
   }, []);
+
+  const [loadingTable, setLoadingTable] = useState(false);
+  const handleReloadCredits = useCallback(
+    debounce(() => {
+      setLoadingTable(true);
+      GetCredits().then((res) => {
+        setSolicitudes(res.data)
+        setSolicitudesBack(res.data)
+        setLoadingTable(false);
+      })
+    }, 300), // 300 ms de espera antes de ejecutar la función (evitar spamming de peticiones)
+    []
+  );
 
   useEffect(() => {
     let actualList = solicitudesBack
@@ -642,6 +658,12 @@ const Solicitudes: FC = () => {
     });
   };
 
+  const navigate = useNavigate();
+
+  const handleMoreInfo = (id: string) => {
+    navigate(`/solicitudes/${id}`);
+  }
+
   const rowkeys = [
     "id",
     "userId",
@@ -716,23 +738,32 @@ const Solicitudes: FC = () => {
           }) as TableContentIndvidual[],
           hoverEffect: true,
           hoverType: "individual",
-          actions: (hasPermision(userInfo?.role, Roles.USER_ADMIN) &&
-            fila["status"] === Status.PENDING) ? [
+          actions: [
+            ...(hasPermision(userInfo?.role, Roles.USER_ADMIN) &&
+              fila["status"] === Status.PENDING) ? [
+              {
+                label: "Aprobar",
+                icon: <FaCheck />,
+                onClick: () => handleApprove(fila["id"]),
+                background: "#5cff67",
+                color: theme === "dark" ? "#fff" : "#000",
+              },
+              {
+                label: "Rechazar",
+                icon: <FaTimes />,
+                onClick: () => handleReject(fila["id"]),
+                background: "#ff5c64",
+                color: theme === "dark" ? "#fff" : "#000",
+              },
+            ] : [],
             {
-              label: "Aprobar",
-              icon: <FaCheck />,
-              onClick: () => handleApprove(fila["id"]),
-              background: "#5cff67",
+              label: "Ver detalles",
+              icon: <FaEye />,
+              onClick: () => handleMoreInfo(fila["id"]),
+              background: "#3f649ef4",
               color: theme === "dark" ? "#fff" : "#000",
-            },
-            {
-              label: "Rechazar",
-              icon: <FaTimes />,
-              onClick: () => handleReject(fila["id"]),
-              background: "#ff5c64",
-              color: theme === "dark" ? "#fff" : "#000",
-            },
-          ] : [],
+            }
+          ],
           id: fila["id"].toString(),
         }
         return temp
@@ -929,7 +960,7 @@ const Solicitudes: FC = () => {
             <select onChange={handleCreditChange} name="period"  >
               <option value="0">Seleccione una periodicidad de pago</option>
               <option value="12">Mensual</option>
-              <option value="48">Semanal</option>
+              <option value="52">Semanal</option>
               <option value="24">Quincenal</option>
             </select>
           </div>
@@ -1136,7 +1167,7 @@ const Solicitudes: FC = () => {
             <select onChange={handleFinancingChange} name="period"  >
               <option value="0">Seleccione una periodicidad de pago</option>
               <option value="12">Mensual</option>
-              <option value="48">Semanal</option>
+              <option value="52">Semanal</option>
               <option value="24">Quincenal</option>
             </select>
           </div>
@@ -1175,6 +1206,9 @@ const Solicitudes: FC = () => {
           <button className="filter-button" onClick={toggleFilterBox}>
             Filtros
           </button>
+          <button onClick={handleReloadCredits}>
+            <FiRefreshCw />
+          </button>
         </div>
         <FilterPortal
           clearFilter={() => setSelectedFilter({
@@ -1193,7 +1227,7 @@ const Solicitudes: FC = () => {
             isSticky={true}
             maxHeight="60vh"
             indexed={false}
-            loading={false}
+            loading={loadingTable}
             loader={
               <div
                 style={{

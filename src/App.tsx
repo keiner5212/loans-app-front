@@ -25,6 +25,10 @@ const ForgotPassword = lazy<ComponentType>(
   () => import("./pages/Auth/PasswordRecovery")
 )
 
+const CreditDetails = lazy<ComponentType>(() => import("./pages/solicitudes/CreditDetails/Credit"));
+const FinancingDetails = lazy<ComponentType>(() => import("./pages/solicitudes/CreditDetails/Financing"));
+const UserDetails = lazy<ComponentType>(() => import("./pages/adminUsuarios/UserDetails/User"));
+
 function App() {
   const { authToken, setTokenReady, setAuthToken, setUserInfo } = useAppStore();
   const [localstorageChecked, setLocalStorageChecked] = useState(false);
@@ -33,7 +37,7 @@ function App() {
     const savedToken = localStorage.getItem('authToken');
     if (savedToken) {
       setAuthToken(savedToken);
-    }else{
+    } else {
       setTokenReady(true);
     }
     setLocalStorageChecked(true);
@@ -73,11 +77,14 @@ function App() {
           <Route element={<PrivateRoute />}>
             <Route path="/" element={<Home />} />
             <Route path="/solicitudes" element={<Solicitudes />} />
+            <Route path="/solicitudes/:id" element={<CreditDetails />} />
+            <Route path="/solicitudes/financing/:id" element={<FinancingDetails />} />
             <Route path="/cobros" element={<Cobros />} />
             <Route path="/alertas" element={<Alertas />} />
             <Route path="/reportes" element={<Reportes />} />
             <Route path="/configuracion" element={<Configuracion />} />
             <Route path="/administrar-usuarios" element={<AdministrarUsuarios />} />
+            <Route path="/usuarios/:id" element={<UserDetails />} />
           </Route>
           <Route path="*" element={<Home />} />
         </Routes>

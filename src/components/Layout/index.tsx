@@ -137,7 +137,7 @@ export const Layout: FC<Props> = ({ children, loading = false }) => {
               </li>
             </ul>
           </aside>
-          <main>
+          <main className={theme}>
             {loading || !tokenReady ? <LoaderScreen /> : <>{children}</>}
           </main>
         </div>

@@ -9,3 +9,21 @@ export async function getSelfUserInfo(): Promise<AxiosResponse<any, any> | undef
         if (error instanceof AxiosError) return error.response
     }
 }
+
+export async function getUsers() {
+    try {
+        const res = await axiosInstance.get("/api/v1/user/all");
+        return res.data
+    } catch (error) {
+        if (error instanceof AxiosError) return error.response
+    }
+}
+
+export async function getUserById(id: number) {
+    try {
+        const res = await axiosInstance.get(`/api/v1/user/${id}`);
+        return res.data
+    } catch (error) {
+        if (error instanceof AxiosError) return error.response
+    }
+}

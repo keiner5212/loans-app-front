@@ -28,6 +28,33 @@ import { useNavigate } from "react-router-dom";
 import { debounce } from "lodash";
 import { FiRefreshCw } from "react-icons/fi";
 
+const rowkeys = [
+  "id",
+  "userId",
+  "creditType",
+  "userCreatorId",
+  "requestedAmount",
+  "interestRate",
+  "yearsOfPayment",
+  "period",
+  "status",
+  "applicationDate"
+]
+
+
+const columnas = [
+  "ID",
+  "ID de usuario",
+  "Tipo de credito",
+  "ID del creador",
+  "Monto solicitado",
+  "Tasa de interes",
+  "Cantidad de años",
+  "Periodo",
+  "Estado",
+  "Fecha de solicitud"
+];
+
 const Solicitudes: FC = () => {
   const [loadingRequest, setLoadingRequest] = useState(false);
   const [search, setSearch] = useState("");
@@ -668,32 +695,6 @@ const Solicitudes: FC = () => {
     navigate(`/solicitudes/${id}/desembolse`);
   }
 
-  const rowkeys = [
-    "id",
-    "userId",
-    "creditType",
-    "userCreatorId",
-    "requestedAmount",
-    "interestRate",
-    "yearsOfPayment",
-    "period",
-    "status",
-    "applicationDate"
-  ]
-
-
-  const columnas = [
-    "ID",
-    "ID de usuario",
-    "Tipo de credito",
-    "ID del creador",
-    "Monto solicitado",
-    "Tasa de interes",
-    "Cantidad de años",
-    "Periodo",
-    "Estado",
-    "Fecha de solicitud"
-  ];
 
   const headers: TableHeaderType[] = columnas.map((columna, index) => ({
     content: {

@@ -1,5 +1,5 @@
 import { FunctionComponent, useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { Layout } from "../../../components/Layout";
 import { GetCredit } from "../../../api/credit/GetCredits";
 import "./details.css";
@@ -98,7 +98,7 @@ const CreditDetails: FunctionComponent = () => {
                 {credit ? (
                     <div className="details-grid">
                         {renderField("ID", credit.id)}
-                        {renderField("User ID", credit.userId)}
+                        {renderField("User ID", <Link to={`/usuarios/${credit.userId}`}>{credit.userId}</Link>)}
                         {renderField("Credit Type", credit.creditType)}
                         {renderField("User Creator ID", credit.userCreatorId)}
                         {renderField("Requested Amount", `$${credit.requestedAmount}`)}

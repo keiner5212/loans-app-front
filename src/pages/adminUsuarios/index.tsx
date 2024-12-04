@@ -332,7 +332,7 @@ const AdministrarUsuarios: FC = () => {
               label: "Eliminar",
               icon: <FaTrash />,
               onClick: () => handleDelete(fila.id),
-              background: "#3f649ef4",
+              background: "#ff5c64",
               color: theme === "dark" ? "#fff" : "#000",
             }
           ],
@@ -359,7 +359,7 @@ const AdministrarUsuarios: FC = () => {
       return false
     }
 
-    if(!user.password) {
+    if (!user.password) {
       setModalData({
         isOpen: true,
         title: "Error",
@@ -371,7 +371,7 @@ const AdministrarUsuarios: FC = () => {
       })
       return false
     }
-    if(user.password.length < 5) {
+    if (user.password.length < 5) {
       setModalData({
         isOpen: true,
         title: "Error",
@@ -383,7 +383,7 @@ const AdministrarUsuarios: FC = () => {
       })
       return false
     }
-    if(repeatPassword != user.password) {
+    if (repeatPassword != user.password) {
       setModalData({
         isOpen: true,
         title: "Error",
@@ -699,7 +699,7 @@ const AdministrarUsuarios: FC = () => {
 
       {/* Tab: Agregar Usuario */}
       <div id="agregar_usuario" className="tabcontent">
-        <h3>Añadir solicitud de Financiamiento</h3>
+        <h3>Añadir Usuario</h3>
 
         <form ref={formref} onSubmit={handleSubmit} className={theme} >
           <h4 id="user-data-sub">Datos de usuario</h4>

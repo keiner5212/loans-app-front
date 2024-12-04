@@ -26,8 +26,8 @@ const ForgotPassword = lazy<ComponentType>(
 )
 
 const CreditDetails = lazy<ComponentType>(() => import("./pages/solicitudes/CreditDetails/Credit"));
-const FinancingDetails = lazy<ComponentType>(() => import("./pages/solicitudes/CreditDetails/Financing"));
 const UserDetails = lazy<ComponentType>(() => import("./pages/adminUsuarios/UserDetails/User"));
+const DesembolseProps = lazy<ComponentType>(() => import("./pages/solicitudes/desembolse/index"));
 
 function App() {
   const { authToken, setTokenReady, setAuthToken, setUserInfo } = useAppStore();
@@ -78,7 +78,7 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/solicitudes" element={<Solicitudes />} />
             <Route path="/solicitudes/:id" element={<CreditDetails />} />
-            <Route path="/solicitudes/financing/:id" element={<FinancingDetails />} />
+            <Route path="/solicitudes/:id/desembolse" element={<DesembolseProps />} />
             <Route path="/cobros" element={<Cobros />} />
             <Route path="/alertas" element={<Alertas />} />
             <Route path="/reportes" element={<Reportes />} />

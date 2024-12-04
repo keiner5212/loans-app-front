@@ -6,6 +6,7 @@ import "./details.css";
 import { LoaderScreen } from "../../../components/Loader/LoaderScreen";
 import { useAppStore } from "../../../store/appStore";
 import { CreditType } from "../../../constants/credits/Credit";
+import { getFile } from "../../../api/files/GetFiles";
 
 interface Credit {
     id: number;
@@ -33,6 +34,7 @@ const CreditDetails: FunctionComponent = () => {
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
     const { theme } = useAppStore();
+    const [contractSignedUrl, setSignatureUrl] = useState<string | null>(null);
 
     useEffect(() => {
         if (id) {
@@ -55,6 +57,20 @@ const CreditDetails: FunctionComponent = () => {
     const handleGoback = () => {
         navigate(-1);
     };
+
+    useEffect(() => {
+        if (credit) {
+            const getContract = async (signedContract: string) => {
+                const fileResponse = await getFile(signedContract);
+                const url = URL.createObjectURL(fileResponse);
+                setSignatureUrl(url);
+            }
+
+            if (credit.signedContract) {
+                getContract(credit.signedContract);
+            }
+        }
+    }, [credit]);
 
     const renderField = (label: string, value: any) => (
         <div className={"details-field" + " " + theme}>
@@ -96,6 +112,9 @@ const CreditDetails: FunctionComponent = () => {
                         {renderField("Released Date", credit.releasedDate)}
                         {renderField("Finished Date", credit.finishedDate)}
                         {renderField("Last Payment Date", credit.lastPaymentDate)}
+                        {credit.signedContract && renderField("Signed Contract URL",
+                            <a href={contractSignedUrl || ""} target="_blank" >View Signed Contract</a>
+                        )}
                         {renderField("Signed Contract", credit.signedContract)}
                         {credit.creditType == CreditType.FINANCING && <>
                             {

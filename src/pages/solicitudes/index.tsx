@@ -2,7 +2,7 @@ import { FC, useCallback, useEffect, useRef, useState } from "react";
 import { Layout } from "../../components/Layout";
 import "../../components/tabs/tabs.css";
 import "./solicitudes.css";
-import { FaCheck, FaEye, FaTimes } from "react-icons/fa";
+import { FaCheck, FaEye, FaMoneyBill, FaTimes } from "react-icons/fa";
 import { openContent } from "../../components/tabs";
 import { useAppStore } from "../../store/appStore";
 import { TableContextProvider } from "../../components/Table/TableService";
@@ -664,6 +664,10 @@ const Solicitudes: FC = () => {
     navigate(`/solicitudes/${id}`);
   }
 
+  const handleDesembolso = (id: string) => {
+    navigate(`/solicitudes/${id}/desembolse`);
+  }
+
   const rowkeys = [
     "id",
     "userId",
@@ -762,7 +766,16 @@ const Solicitudes: FC = () => {
               onClick: () => handleMoreInfo(fila["id"]),
               background: "#3f649ef4",
               color: theme === "dark" ? "#fff" : "#000",
-            }
+            },
+            ...(fila["status"] === Status.APPROVED) ? [
+              {
+                label: "Desembolsar",
+                icon: <FaMoneyBill />,
+                onClick: () => handleDesembolso(fila["id"]),
+                background: "#3f649ef4",
+                color: theme === "dark" ? "#fff" : "#000",
+              }
+            ] : [],
           ],
           id: fila["id"].toString(),
         }

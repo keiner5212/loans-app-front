@@ -27,3 +27,17 @@ export async function getUserById(id: number) {
         if (error instanceof AxiosError) return error.response
     }
 }
+
+//search users
+export async function searchUser(searchTerm: string) {
+    try {
+        const res = await axiosInstance.get(`/api/v1/user/search/`, {
+            params: {
+                search: searchTerm
+            }
+        });
+        return res.data
+    } catch (error) {
+        if (error instanceof AxiosError) return error.response
+    }
+}

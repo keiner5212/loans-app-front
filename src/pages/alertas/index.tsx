@@ -1,6 +1,6 @@
 import { FC, useCallback, useEffect, useRef, useState } from "react";
 import { Layout } from "../../components/Layout";
-import { FiRefreshCw } from "react-icons/fi"; 
+import { FiRefreshCw } from "react-icons/fi";
 import "../../components/tabs/tabs.css";
 import SimpleModal from "../../components/modal/simpleModal/ModalSimple";
 import { openContent } from "../../components/tabs";
@@ -27,9 +27,6 @@ const rowkeys = [
   "creditType",
   "userCreatorId",
   "requestedAmount",
-  "interestRate",
-  "yearsOfPayment",
-  "period",
   "status",
   "applicationDate"
 ]
@@ -41,9 +38,6 @@ const columnas = [
   "Tipo de credito",
   "ID del creador",
   "Monto solicitado",
-  "Tasa de interes",
-  "Cantidad de años",
-  "Periodo",
   "Estado",
   "Fecha de solicitud"
 ];
@@ -233,14 +227,14 @@ const Alertas: FC = () => {
             },
             {
               label: "Enviar recordatorio por correo",
-              icon: <FaEnvelope />,
+              icon: <FaEnvelope size={30} />,
               onClick: () => handleSendReminderEmail(fila["userId"]),
               background: "#ff5c64",
               color: theme === "dark" ? "#fff" : "#000",
             },
             {
               label: "Enviar recordatorio por WhatsApp",
-              icon: <FaWhatsapp />,
+              icon: <FaWhatsapp size={30} />,
               onClick: () => handleSendWhatsApp(fila["userId"]),
               background: "#5cff67",
               color: theme === "dark" ? "#fff" : "#000",

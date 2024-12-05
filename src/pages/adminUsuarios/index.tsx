@@ -4,7 +4,7 @@ import "../../components/tabs/tabs.css";
 import { openContent } from "../../components/tabs";
 import "./admin_usuarios.css"
 import { Roles } from "../../constants/permisions/Roles";
-import { getUsers } from "../../api/user/userData";
+import { getUsers, searchUser } from "../../api/user/userData";
 import { TableContentIndvidual, TableHeaderType, TableRowType } from "../../components/Table/TableTypes";
 import { useAppStore } from "../../store/appStore";
 import { formatUtcToLocal } from "../../utils/formats/formatToLocal";
@@ -545,6 +545,21 @@ const AdministrarUsuarios: FC = () => {
 
     // verify user data
     const isValid = verifyUserData();
+    const userExistentDocument = await searchUser(user.document);
+    const userExistentEmail = await searchUser(user.email);
+    if (userExistentDocument.user || userExistentEmail.user) {
+      setModalData({
+        isOpen: true,
+        title: "Error",
+        message: "Ya existe un usuario con el número de documento o correo ingresado.",
+        hasTwoButtons: false,
+        button1Text: "Ok",
+        button2Text: "",
+        closeOnOutsideClick: false,
+      })
+      setLoadingRequest(false);
+      return
+    }
     if (isValid) {
 
       const userToSend = {

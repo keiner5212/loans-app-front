@@ -8,7 +8,7 @@ import { useAppStore } from "../../../store/appStore";
 import { CreditType } from "../../../constants/credits/Credit";
 import { getFile } from "../../../api/files/GetFiles";
 
-interface Credit {
+export interface Credit {
     id: number;
     userId: number;
     creditType: string;
@@ -24,6 +24,7 @@ interface Credit {
     releasedDate: string | null;
     finishedDate: string | null;
     lastPaymentDate: string | null;
+    lastPaymentPeriod: number | null;
     signedContract: string | null;
 }
 
@@ -111,6 +112,7 @@ const CreditDetails: FunctionComponent = () => {
                         {renderField("Rejected Date", credit.rejectedDate)}
                         {renderField("Released Date", credit.releasedDate)}
                         {renderField("Finished Date", credit.finishedDate)}
+                        {renderField("Last Payment Period", credit.lastPaymentPeriod)}
                         {renderField("Last Payment Date", credit.lastPaymentDate)}
                         {credit.signedContract && renderField("Signed Contract URL",
                             <a href={contractSignedUrl || ""} target="_blank" >View Signed Contract</a>

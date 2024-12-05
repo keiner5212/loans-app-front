@@ -28,6 +28,8 @@ import { useNavigate } from "react-router-dom";
 import { debounce } from "lodash";
 import { FiRefreshCw } from "react-icons/fi";
 import { convertMonthlyRate, CreditPeriodObjectValues } from "../../utils/formats/Credits";
+import { searchUser } from "../../api/user/userData";
+import { calcularPago } from "../../utils/amortizacion/Credit";
 
 const rowkeys = [
   "id",
@@ -362,6 +364,28 @@ const Solicitudes: FC = () => {
 
     // verify user data
     const isValid = verifyUserData();
+
+    const userExistentDocument = await searchUser(user.document);
+    const userExistentEmail = await searchUser(user.email);
+    if (userExistentDocument.user || userExistentEmail.user) {
+      setModalData({
+        isOpen: true,
+        title: "Error",
+        message: "Ya existe un usuario con el número de documento o correo ingresado, se reutilizará su información.",
+        hasTwoButtons: false,
+        button1Text: "Ok",
+        button2Text: "",
+        closeOnOutsideClick: false,
+      })
+    }
+
+    let ExistentUser = null;
+    if (userExistentDocument.user) {
+      ExistentUser = userExistentDocument.user;
+    } else if (userExistentEmail.user) {
+      ExistentUser = userExistentEmail.user;
+    }
+
     if (isValid) {
 
       if (!credit.period || credit.period === "0") {
@@ -406,24 +430,33 @@ const Solicitudes: FC = () => {
         return
       }
 
-      const userToSend = {
-        ...user,
-        password: user.document,
-      }
+      let resId = null;
 
-      await uploadFiles(userToSend);
+      if (ExistentUser) {
+        resId = ExistentUser.id;
+      } else {
+        const userToSend = {
+          ...user,
+          password: user.document,
+        }
 
-      const res = await CreateUser(userToSend);
+        await uploadFiles(userToSend);
 
-      if (!res) {
-        await deleteFile(userToSend.proofOfIncome as string);
-        await deleteFile(userToSend.locationCroquis as string);
-        await deleteFile(userToSend.documentImageFront as string);
-        await deleteFile(userToSend.documentImageBack as string);
+        const res = await CreateUser(userToSend);
+
+        if (!res) {
+          await deleteFile(userToSend.proofOfIncome as string);
+          await deleteFile(userToSend.locationCroquis as string);
+          await deleteFile(userToSend.documentImageFront as string);
+          await deleteFile(userToSend.documentImageBack as string);
+        } else {
+          resId = res.content
+        }
+
       }
 
       await CreateCredit({
-        userId: res.content,
+        userId: resId,
         userCreatorId: userInfo.id,
         requestedAmount: credit.requestedAmount,
         interestRate: interestRate,
@@ -473,6 +506,27 @@ const Solicitudes: FC = () => {
   const handleSubmitSolFinanciamiento = async (e: any) => {
     e.preventDefault();
     setLoadingRequest(true);
+
+    const userExistentDocument = await searchUser(user.document);
+    const userExistentEmail = await searchUser(user.email);
+    if (userExistentDocument.user || userExistentEmail.user) {
+      setModalData({
+        isOpen: true,
+        title: "Error",
+        message: "Ya existe un usuario con el número de documento o correo ingresado, se reutilizará su información.",
+        hasTwoButtons: false,
+        button1Text: "Ok",
+        button2Text: "",
+        closeOnOutsideClick: false,
+      })
+    }
+
+    let ExistentUser = null;
+    if (userExistentDocument.user) {
+      ExistentUser = userExistentDocument.user;
+    } else if (userExistentEmail.user) {
+      ExistentUser = userExistentEmail.user;
+    }
 
     // verify user data
     const isValid = verifyUserData();
@@ -576,24 +630,45 @@ const Solicitudes: FC = () => {
         return
       }
 
-      const userToSend = {
-        ...user,
-        password: user.document,
-      }
+      let resId = null;
 
-      await uploadFiles(userToSend);
+      if (ExistentUser) {
+        resId = ExistentUser.id;
+      } else {
 
-      const res = await CreateUser(userToSend);
+        const userToSend = {
+          ...user,
+          password: user.document,
+        }
 
-      if (!res) {
-        await deleteFile(userToSend.proofOfIncome as string);
-        await deleteFile(userToSend.locationCroquis as string);
-        await deleteFile(userToSend.documentImageFront as string);
-        await deleteFile(userToSend.documentImageBack as string);
+        await uploadFiles(userToSend);
+
+        const res = await CreateUser(userToSend);
+
+        if (!res) {
+          await deleteFile(userToSend.proofOfIncome as string);
+          await deleteFile(userToSend.locationCroquis as string);
+          await deleteFile(userToSend.documentImageFront as string);
+          await deleteFile(userToSend.documentImageBack as string);
+          setLoadingRequest(false);
+          setModalData({
+            isOpen: true,
+            title: "Error",
+            message: "Error al crear el usuario.",
+            hasTwoButtons: false,
+            button1Text: "Ok",
+            button2Text: "",
+            closeOnOutsideClick: false,
+          })
+          return
+        } else {
+          resId = res.content
+        }
+
       }
 
       const creditRes = await CreateCredit({
-        userId: res.content,
+        userId: resId,
         userCreatorId: userInfo.id,
         requestedAmount: financing.vehiclePrice,
         interestRate: interestRate,
@@ -716,6 +791,7 @@ const Solicitudes: FC = () => {
   }))
 
   useEffect(() => {
+    if (!solicitudes) return
     setRows(
       solicitudes.map((fila: { [x: string]: any }) => {
         const temp: TableRowType = {
@@ -961,6 +1037,17 @@ const Solicitudes: FC = () => {
             />
           </div>
           <div>
+            <label>Pago en cada periodo:</label>
+            <input
+              type="number"
+              name="periodlyPayment"
+              value={calcularPago(interestRate / 100, credit.requestedAmount, 0,
+                credit.yearsOfPayment * parseInt(credit.period), parseInt(credit.period))}
+              disabled
+              required
+            />
+          </div>
+          <div>
             <label>Tiempo de pago (años):</label>
             <input
               type="number"
@@ -1161,6 +1248,18 @@ const Solicitudes: FC = () => {
             />
           </div>
           <div>
+            <label>Pago en cada periodo:</label>
+            <input
+              type="number"
+              name="periodlyPayment"
+              value={calcularPago(interestRate / 100, financing.vehiclePrice,
+                financing.downPayment,
+                financing.yearsOfPayment * parseInt(financing.period), parseInt(financing.period))}
+              disabled
+              required
+            />
+          </div>
+          <div>
             <label>Tiempo de pago (años):</label>
             <input
               type="number"
@@ -1181,8 +1280,8 @@ const Solicitudes: FC = () => {
             />
           </div>
           <div>
-            <label>Forma de pago {credit.period != "0" ?
-              "(Tasa = " + convertMonthlyRate(interestRate / 100, parseInt(credit.period)) + "%)" : ""}:</label>
+            <label>Forma de pago {financing.period != "0" ?
+              "(Tasa = " + convertMonthlyRate(interestRate / 100, parseInt(financing.period)) + "%)" : ""}:</label>
             <select onChange={handleCreditChange} name="period"  >
               <option value="0">Seleccione una periodicidad de pago</option>
               {Object.keys(CreditPeriodObjectValues).map((period: string, index) => (

@@ -10,11 +10,13 @@ import { Config } from "../../constants/config/Config";
 import { getFile } from "../../api/files/GetFiles";
 import { setConfig } from "../../api/config/SetConfig";
 import { uploadFile } from "../../api/files/UploadFile";
+import LoaderModal from "../../components/modal/Loader/LoaderModal";
 
 const Configuracion: FC = () => {
     const defaultTabRef = useRef<HTMLButtonElement>(null);
     const [error, setError] = useState({ title: "", message: "", isOpen: false });
     const { theme } = useAppStore();
+    const [loadingRequest, setLoadingRequest] = useState(false);
     const [signature, setSignature] = useState<File | null>(null);
     const [previewImage, setPreviewImage] = useState<string | null>(null);
 
@@ -30,6 +32,7 @@ const Configuracion: FC = () => {
         if (defaultTabRef.current) {
             defaultTabRef.current.click();
         }
+        setLoadingRequest(true);
 
         const loadConfigurations = async () => {
             try {
@@ -46,6 +49,7 @@ const Configuracion: FC = () => {
                     maxCreditAmount: parseFloat(maxCreditAmountRes?.data.value || "0"),
                     minCreditAmount: parseFloat(minCreditAmountRes?.data.value || "0"),
                 });
+                setLoadingRequest(false);
             } catch (error) {
                 setError({
                     title: "Error",
@@ -60,11 +64,14 @@ const Configuracion: FC = () => {
 
     useEffect(() => {
         if (formData.signaturefromApi) {
+            setLoadingRequest(true);
             getFile(formData.signaturefromApi).then((response) => {
                 if (response) {
                     const previewUrl = URL.createObjectURL(response);
                     setPreviewImage(previewUrl);
                 }
+            }).finally(() => {
+                setLoadingRequest(false);
             });
         }
     }, [formData.signaturefromApi]);
@@ -85,6 +92,10 @@ const Configuracion: FC = () => {
     const guardarConfiguraciones = async (e: React.FormEvent) => {
         e.preventDefault();
 
+        if (loadingRequest) return;
+
+        setLoadingRequest(true);
+
         try {
             let signaturePath = formData.signaturefromApi;
 
@@ -100,6 +111,8 @@ const Configuracion: FC = () => {
             await setConfig(Config.SIGNATURE, signaturePath || '');
             await setConfig(Config.MAX_CREDIT_AMOUNT, formData.maxCreditAmount.toString());
             await setConfig(Config.MIN_CREDIT_AMOUNT, formData.minCreditAmount.toString());
+
+            setLoadingRequest(false);
 
             setError({
                 title: "Éxito",
@@ -118,6 +131,7 @@ const Configuracion: FC = () => {
 
     return (
         <Layout>
+            <LoaderModal isOpen={loadingRequest} />
             <div className="tab">
                 <button
                     className="tablinks"

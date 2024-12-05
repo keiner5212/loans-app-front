@@ -30,3 +30,37 @@
     border-radius: 5px;
 }
 
+.payment-form{
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+    margin: 20px;
+    width: 50%;
+    max-width: 400px;
+
+    & div {
+        width: 100%;
+    }
+
+    & div:last-child {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+}
+
+.payment-container{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    color: #000;
+
+    &.dark{
+        color: #fff;
+    }
+}

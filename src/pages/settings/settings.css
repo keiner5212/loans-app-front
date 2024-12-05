@@ -1,6 +1,10 @@
 #configuraciones {
     display: flex;
     padding: 20px;
+
+    & .dark{
+        color: #c4c4c4;
+    }
 }
 
 #configuraciones form {

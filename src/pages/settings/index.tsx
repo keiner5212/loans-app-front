@@ -144,15 +144,16 @@ const Configuracion: FC = () => {
                         </select>
                     </div>
                     <div>
-                        <label>Tasa de Interés (%):</label>
+                        <label>Tasa de Interés Efectivo mensual (0.01 = 1%):</label>
                         <input
                             type="number"
                             name="interestRate"
                             value={formData.interestRate}
                             onChange={handleInputChange}
                             min="0"
-                            step="0.01"
+                            step="0.001"
                         />
+                        <span className={theme}>Equivalente a: {formData.interestRate * 100}%</span>
                     </div>
                     <div>
                         <label>Monto Máximo de Crédito:</label>

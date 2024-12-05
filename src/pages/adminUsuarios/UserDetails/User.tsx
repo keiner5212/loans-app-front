@@ -7,7 +7,7 @@ import { getUserById } from "../../../api/user/userData";
 import { Usuario } from "..";
 import { useAppStore } from "../../../store/appStore";
 import { getFile } from "../../../api/files/GetFiles";
-import { formatUtcToLocal } from "../../../utils/date/formatToLocal";
+import { formatUtcToLocal } from "../../../utils/formats/formatToLocal";
 
 interface UserDetailsProps { }
 

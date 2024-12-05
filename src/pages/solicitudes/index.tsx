@@ -22,11 +22,12 @@ import { CreateCredit, CreateFinancing } from "../../api/credit/CreateCredit";
 import { CreditType, Status } from "../../constants/credits/Credit";
 import { FilterPortal } from "./FilterPortal";
 import { GetCredits } from "../../api/credit/GetCredits";
-import { formatUtcToLocal } from "../../utils/date/formatToLocal";
+import { formatUtcToLocal } from "../../utils/formats/formatToLocal";
 import { AproveCredit, DeclineCredit } from "../../api/credit/ChangeStatus";
 import { useNavigate } from "react-router-dom";
 import { debounce } from "lodash";
 import { FiRefreshCw } from "react-icons/fi";
+import { convertMonthlyRate, CreditPeriodObjectValues } from "../../utils/formats/Credits";
 
 const rowkeys = [
   "id",
@@ -950,7 +951,7 @@ const Solicitudes: FC = () => {
             />
           </div>
           <div>
-            <label>Tasa de interés (%):</label>
+            <label>Tasa de interés (% Efectivo Mensual):</label>
             <input
               type="number"
               name="interestRate"
@@ -970,12 +971,15 @@ const Solicitudes: FC = () => {
             />
           </div>
           <div>
-            <label>Forma de pago:</label>
+            <label>Forma de pago {credit.period != "0" ?
+              "(Tasa = " + 100 * convertMonthlyRate(interestRate / 100, parseInt(credit.period)) + "%)" : ""}:</label>
             <select onChange={handleCreditChange} name="period"  >
               <option value="0">Seleccione una periodicidad de pago</option>
-              <option value="12">Mensual</option>
-              <option value="52">Semanal</option>
-              <option value="24">Quincenal</option>
+              {Object.keys(CreditPeriodObjectValues).map((period: string, index) => (
+                <option key={index} value={CreditPeriodObjectValues[period]}>
+                  {period}
+                </option>
+              ))}
             </select>
           </div>
           <div>
@@ -1147,7 +1151,7 @@ const Solicitudes: FC = () => {
             />
           </div>
           <div>
-            <label>Tasa de interés (%):</label>
+            <label>Tasa de interés (% Efectivo Mensual):</label>
             <input
               type="number"
               name="interestRate"
@@ -1177,12 +1181,15 @@ const Solicitudes: FC = () => {
             />
           </div>
           <div>
-            <label>Forma de pago:</label>
-            <select onChange={handleFinancingChange} name="period"  >
+            <label>Forma de pago {credit.period != "0" ?
+              "(Tasa = " + convertMonthlyRate(interestRate / 100, parseInt(credit.period)) + "%)" : ""}:</label>
+            <select onChange={handleCreditChange} name="period"  >
               <option value="0">Seleccione una periodicidad de pago</option>
-              <option value="12">Mensual</option>
-              <option value="52">Semanal</option>
-              <option value="24">Quincenal</option>
+              {Object.keys(CreditPeriodObjectValues).map((period: string, index) => (
+                <option key={index} value={CreditPeriodObjectValues[period]}>
+                  {period}
+                </option>
+              ))}
             </select>
           </div>
           <div>

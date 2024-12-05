@@ -32,8 +32,11 @@
   animation: fadeEffect 1s;
   scrollbar-color: #cacaca transparent;
   &.dark {
-    color: #fff;
+    color: #c4c4c4;
     background-color: #171e24;
+  }
+  & .dark {
+    color: #c4c4c4;
   }
 }
 

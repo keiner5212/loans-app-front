@@ -2,7 +2,7 @@ import { FC, useCallback, useEffect, useRef, useState } from "react";
 import { Layout } from "../../components/Layout";
 import "../../components/tabs/tabs.css";
 import "./solicitudes.css";
-import { FaCheck, FaEye, FaMoneyBill, FaTimes } from "react-icons/fa";
+import { FaCheck, FaEye, FaMoneyBill, FaTable, FaTimes } from "react-icons/fa";
 import { openContent } from "../../components/tabs";
 import { useAppStore } from "../../store/appStore";
 import { TableContextProvider } from "../../components/Table/TableService";
@@ -21,7 +21,7 @@ import { deleteFile } from "../../api/files/DeleteFiles";
 import { CreateCredit, CreateFinancing } from "../../api/credit/CreateCredit";
 import { CreditType, Status } from "../../constants/credits/Credit";
 import { FilterPortal } from "./FilterPortal";
-import { GetCredits } from "../../api/credit/GetCredits";
+import { GetCredit, GetCredits } from "../../api/credit/GetCredits";
 import { formatUtcToLocal } from "../../utils/formats/formatToLocal";
 import { AproveCredit, DeclineCredit } from "../../api/credit/ChangeStatus";
 import { useNavigate } from "react-router-dom";
@@ -29,7 +29,9 @@ import { debounce } from "lodash";
 import { FiRefreshCw } from "react-icons/fi";
 import { convertMonthlyRate, CreditPeriodObjectValues } from "../../utils/formats/Credits";
 import { searchUser } from "../../api/user/userData";
-import { calcularPago } from "../../utils/amortizacion/Credit";
+import { AmortizationRow, calcularPago, calcularTabla } from "../../utils/amortizacion/Credit";
+import ExcelJS from 'exceljs';
+import { saveAs } from 'file-saver';
 
 const rowkeys = [
   "id",
@@ -731,6 +733,113 @@ const Solicitudes: FC = () => {
 
   };
 
+  const exportExcel = async (amortizacion: AmortizationRow[], totales: { totalPagado: number; totalIntereses: number; totalAmortizado: number }) => {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Amortización');
+
+    // Definir las columnas
+    worksheet.columns = [
+      { header: 'Periodo', key: 'periodo', width: 10 },
+      { header: 'Pago', key: 'pago', width: 15 },
+      { header: 'Intereses', key: 'intereses', width: 15 },
+      { header: 'Amortización', key: 'amortizacion', width: 15 },
+      { header: 'Deuda Restante', key: 'deudaRestante', width: 20 },
+    ];
+
+    // Agregar las filas desde el array
+    amortizacion.forEach((dato) => {
+      worksheet.addRow({
+        periodo: dato.periodo,
+        pago: dato.pago,
+        intereses: dato.intereses,
+        amortizacion: dato.amortizacion,
+        deudaRestante: dato.deudaRestante,
+      });
+    });
+
+    // Negrita para encabezados
+    worksheet.getRow(1).font = { bold: true };
+
+    // Agregar bordes a las celdas
+    worksheet.eachRow((row) => {
+      row.eachCell((cell) => {
+        cell.border = {
+          top: { style: 'thin' },
+          left: { style: 'thin' },
+          bottom: { style: 'thin' },
+          right: { style: 'thin' },
+        };
+        cell.alignment = { vertical: 'middle', horizontal: 'center' };
+      });
+    });
+
+    // Agregar fila de totales
+    const totalRow = worksheet.addRow({
+      periodo: 'Totales',
+      pago: totales.totalPagado,
+      intereses: totales.totalIntereses,
+      amortizacion: totales.totalAmortizado,
+      deudaRestante: '-',
+    });
+
+    // Aplicar estilos a la fila de totales
+    totalRow.font = { bold: true };
+    totalRow.eachCell((cell) => {
+      cell.border = {
+        top: { style: 'thin' },
+        left: { style: 'thin' },
+        bottom: { style: 'thin' },
+        right: { style: 'thin' },
+      };
+      cell.alignment = { vertical: 'middle', horizontal: 'center' };
+    });
+
+
+    worksheet.eachRow((row, rowIndex) => {
+      row.eachCell((cell, colNumber) => {
+        if (rowIndex > 1 && colNumber !== 1 && colNumber !== 5) {
+          cell.numFmt = '#,##0.00';
+        }
+      });
+    });
+
+    // Generar el archivo Excel
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    });
+
+    saveAs(blob, 'Tabla_Amortizacion.xlsx');
+  };
+
+  const handleGenerateAmortization = async (id: any) => {
+    setLoadingRequest(true);
+    if (id) {
+      GetCredit(Number(id))
+        .then((response) => {
+          const foundCredit = response.data.credit
+          const foundFinancing = response.data.financing
+
+          const { tabla, totalPagado, totalIntereses, totalAmortizado } = calcularTabla(
+            foundCredit.interestRate / 100,
+            foundCredit.requestedAmount,
+            foundFinancing ? foundFinancing.downPayment : 0,
+            foundCredit.yearsOfPayment * foundCredit.period,
+            foundCredit.period
+          )
+
+
+          exportExcel(tabla, { totalPagado, totalIntereses, totalAmortizado });
+        })
+        .catch((error) => {
+          console.error("Error fetching credit:", error);
+        })
+        .finally(() => {
+          setLoadingRequest(false);
+        });
+    }
+  }
+
   const handleApprove = (id: number) => {
     setLoadingRequest(true);
     AproveCredit(id).then(() => {
@@ -850,6 +959,15 @@ const Solicitudes: FC = () => {
                 label: "Desembolsar",
                 icon: <FaMoneyBill />,
                 onClick: () => handleDesembolso(fila["id"]),
+                background: "#3f649ef4",
+                color: theme === "dark" ? "#fff" : "#000",
+              }
+            ] : [],
+            ...(fila["status"] === Status.RELEASED) ? [
+              {
+                label: "Generar tabla de amortizaciones",
+                icon: <FaTable size={30} />,
+                onClick: () => handleGenerateAmortization(fila["id"]),
                 background: "#3f649ef4",
                 color: theme === "dark" ? "#fff" : "#000",
               }
@@ -1282,7 +1400,7 @@ const Solicitudes: FC = () => {
           <div>
             <label>Forma de pago {financing.period != "0" ?
               "(Tasa = " + convertMonthlyRate(interestRate / 100, parseInt(financing.period)) + "%)" : ""}:</label>
-            <select onChange={handleCreditChange} name="period"  >
+            <select onChange={handleFinancingChange} name="period"  >
               <option value="0">Seleccione una periodicidad de pago</option>
               {Object.keys(CreditPeriodObjectValues).map((period: string, index) => (
                 <option key={index} value={CreditPeriodObjectValues[period]}>

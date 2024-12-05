@@ -1,6 +1,6 @@
 import { convertMonthlyRate } from "../formats/Credits";
 
-interface AmortizationRow {
+export interface AmortizationRow {
     periodo: number;
     pago: number;
     intereses: number;
@@ -18,15 +18,14 @@ export const calcularPago = (tasaInteres: number, deuda: number, pagoInicial: nu
     return rounded;
 }
 
-// Función para calcular la tabla de amortización
 export const calcularTabla = (tasaInteres: number, deuda: number, pagoInicial: number, periodos: number, CreditPeriod: number) => {
-    const tasaPeriodo = convertMonthlyRate(tasaInteres, CreditPeriod); // Convertir tasa mensual a especifica
+    const tasaPeriodo = convertMonthlyRate(tasaInteres, CreditPeriod); // Convertir tasa mensual a específica
     const deudaRestante = deuda - pagoInicial; // Deuda después del pago inicial
     const pagoPeriodo = (deudaRestante * tasaPeriodo * Math.pow(1 + tasaPeriodo, periodos)) / (Math.pow(1 + tasaPeriodo, periodos) - 1); // Calcular pago mensual
 
     let deudaActual = deudaRestante;
     let tabla: AmortizationRow[] = [];
-    let totalPagado = 0;
+    let totalPagado = 0; // Inicializamos con el pago inicial
     let totalIntereses = 0;
     let totalAmortizado = 0;
 
@@ -44,6 +43,11 @@ export const calcularTabla = (tasaInteres: number, deuda: number, pagoInicial: n
         const intereses = deudaActual * tasaPeriodo;
         const amortizacion = pagoPeriodo - intereses;
         deudaActual -= amortizacion;
+
+        // Asegurarnos de que la deuda no sea negativa
+        deudaActual = Math.max(deudaActual, 0);
+        //asegurar que la deuda no sea absurdamente pequeña por errores en resta
+        if(deudaActual < 1e-8) deudaActual = 0
 
         tabla.push({
             periodo: i,

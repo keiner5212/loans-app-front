@@ -1,6 +1,6 @@
 import { FC } from "react";
 import ReactDOM from "react-dom";
-import { CreditType, Status } from "../../constants/credits/Credit";
+import { CreditType, Status } from "@/constants/credits/Credit";
 
 export const FilterPortal: FC<{
     show: boolean; onClose: () => void;

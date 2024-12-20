@@ -1,24 +1,24 @@
 import { FC, useCallback, useEffect, useRef, useState } from "react";
-import { Layout } from "../../components/Layout";
+import { Layout } from "@/components/Layout";
 import { FiRefreshCw } from "react-icons/fi";
-import "../../components/tabs/tabs.css";
-import SimpleModal from "../../components/modal/simpleModal/ModalSimple";
-import { openContent } from "../../components/tabs";
+import "@/components/tabs/tabs.css";
+import SimpleModal from "@/components/modal/simpleModal/ModalSimple";
+import { openContent } from "@/components/tabs";
 import "./alertas.css";
-import { GetLateCredits } from "../../api/credit/GetCredits";
+import { GetLateCredits } from "@/api/credit/GetCredits";
 import { debounce } from "lodash";
-import { useAppStore } from "../../store/appStore";
+import { useAppStore } from "@/store/appStore";
 import { useNavigate } from "react-router-dom";
-import { TableContentIndvidual, TableHeaderType, TableRowType } from "../../components/Table/TableTypes";
-import { formatUtcToLocal } from "../../utils/formats/formatToLocal";
+import { TableContentIndvidual, TableHeaderType, TableRowType } from "@/components/Table/TableTypes";
+import { formatUtcToLocal } from "@/utils/formats/formatToLocal";
 import { FaEnvelope, FaEye, FaWhatsapp } from "react-icons/fa";
-import { TableContextProvider } from "../../components/Table/TableService";
-import { TableContainer } from "../../components/Table/TableContainer";
-import { Loader } from "../../components/Loader";
+import { TableContextProvider } from "@/components/Table/TableService";
+import { TableContainer } from "@/components/Table/TableContainer";
+import { Loader } from "@/components/Loader";
 import { FilterPortal } from "../solicitudes/FilterPortal";
-import LoaderModal from "../../components/modal/Loader/LoaderModal";
-import { sendEmailNotification, sendWhatsappNotification } from "../../api/Notifications/SendNotifications";
-import { getUserById } from "../../api/user/userData";
+import LoaderModal from "@/components/modal/Loader/LoaderModal";
+import { sendEmailNotification, sendWhatsappNotification } from "@/api/Notifications/SendNotifications";
+import { getUserById } from "@/api/user/userData";
 import "../solicitudes/solicitudes.css";
 
 const rowkeys = [

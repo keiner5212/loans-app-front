@@ -1,5 +1,5 @@
 import axios, { AxiosError, AxiosResponse, HttpStatusCode } from "axios";
-import { generateAppToken } from "../../utils/security/appToken";
+import { generateAppToken } from "@/utils/security/appToken";
 
 export const login = async (email: string, password: string) => {
     try {

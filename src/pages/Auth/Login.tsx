@@ -1,11 +1,11 @@
 import "./auth.css";
-import { init } from "../../assets/animations/background/index";
+import { init } from "@/assets/animations/background/index";
 import { useEffect, useRef, useState } from "react";
-import { login } from "../../api/auth";
-import { useAppStore } from "../../store/appStore";
-import SimpleModal from "../../components/modal/simpleModal/ModalSimple";
+import { login } from "@/api/auth";
+import { useAppStore } from "@/store/appStore";
+import SimpleModal from "@/components/modal/simpleModal/ModalSimple";
 import { Link, useNavigate } from "react-router-dom";
-import { Loader } from "../../components/Loader";
+import { Loader } from "@/components/Loader";
 
 const Login = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);

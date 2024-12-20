@@ -1,6 +1,6 @@
 import { FC } from "react";
 import ReactDOM from "react-dom";
-import { Roles } from "../../constants/permisions/Roles";
+import { Roles } from "@/constants/permisions/Roles";
 
 export const FilterPortal: FC<{
     show: boolean;

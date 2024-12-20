@@ -1,10 +1,10 @@
 import "./auth.css";
 import { FunctionComponent, useEffect, useRef, useState } from "react";
-import { Loader } from "../../components/Loader";
+import { Loader } from "@/components/Loader";
 import { Link, useNavigate } from "react-router-dom";
-import { init } from "../../assets/animations/background";
-import SimpleModal from "../../components/modal/simpleModal/ModalSimple";
-import { forgotPassword, forgotPasswordChangePassword, forgotPasswordCodeSend } from "../../api/auth";
+import { init } from "@/assets/animations/background";
+import SimpleModal from "@/components/modal/simpleModal/ModalSimple";
+import { forgotPassword, forgotPasswordChangePassword, forgotPasswordCodeSend } from "@/api/auth";
 import { HttpStatusCode } from "axios";
 
 interface ForgotPasswordProps {

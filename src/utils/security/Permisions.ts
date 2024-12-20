@@ -1,4 +1,4 @@
-import { Roles } from "../../constants/permisions/Roles";
+import { Roles } from "@/constants/permisions/Roles";
 
 export function hasPermision(role: string | undefined, permision: string): boolean {
     if (!role) return false;

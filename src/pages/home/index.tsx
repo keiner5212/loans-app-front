@@ -1,7 +1,7 @@
 import { FC } from "react";
-import { Layout } from "../../components/Layout";
+import { Layout } from "@/components/Layout";
 import "./Home.css";
-import { useAppStore } from "../../store/appStore";
+import { useAppStore } from "@/store/appStore";
 
 const Home: FC = () => {
   const { theme } = useAppStore();

@@ -1,11 +1,11 @@
 import { FC, ReactNode, useEffect, useRef, useState } from "react";
 import "./layout.css";
 import { LoaderScreen } from "../Loader/LoaderScreen";
-import { useAppStore } from "../../store/appStore";
+import { useAppStore } from "@/store/appStore";
 import { CiLogin } from "react-icons/ci";
 import { useNavigate } from "react-router-dom";
-import { Roles } from "../../constants/permisions/Roles";
-import { hasPermision } from "../../utils/security/Permisions";
+import { Roles } from "@/constants/permisions/Roles";
+import { hasPermision } from "@/utils/security/Permisions";
 import { FaUser } from "react-icons/fa";
 
 type Props = {

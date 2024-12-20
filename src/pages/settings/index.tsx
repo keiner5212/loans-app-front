@@ -1,16 +1,16 @@
 import { FC, useEffect, useRef, useState } from "react";
-import { Layout } from "../../components/Layout";
-import { openContent } from "../../components/tabs";
-import "../../components/tabs/tabs.css";
-import SimpleModal from "../../components/modal/simpleModal/ModalSimple";
+import { Layout } from "@/components/Layout";
+import { openContent } from "@/components/tabs";
+import "@/components/tabs/tabs.css";
+import SimpleModal from "@/components/modal/simpleModal/ModalSimple";
 import "./settings.css";
-import { useAppStore } from "../../store/appStore";
-import { getConfig } from "../../api/config/GetConfig";
-import { Config } from "../../constants/config/Config";
-import { getFile } from "../../api/files/GetFiles";
-import { setConfig } from "../../api/config/SetConfig";
-import { uploadFile } from "../../api/files/UploadFile";
-import LoaderModal from "../../components/modal/Loader/LoaderModal";
+import { useAppStore } from "@/store/appStore";
+import { getConfig } from "@/api/config/GetConfig";
+import { Config } from "@/constants/config/Config";
+import { getFile } from "@/api/files/GetFiles";
+import { setConfig } from "@/api/config/SetConfig";
+import { uploadFile } from "@/api/files/UploadFile";
+import LoaderModal from "@/components/modal/Loader/LoaderModal";
 
 const Configuracion: FC = () => {
     const defaultTabRef = useRef<HTMLButtonElement>(null);

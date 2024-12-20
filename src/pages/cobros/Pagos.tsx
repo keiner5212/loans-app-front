@@ -1,18 +1,18 @@
 import { FunctionComponent, useEffect, useState } from "react";
-import { Layout } from "../../components/Layout";
+import { Layout } from "@/components/Layout";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import SimpleModal from "../../components/modal/simpleModal/ModalSimple";
-import LoaderModal from "../../components/modal/Loader/LoaderModal";
+import SimpleModal from "@/components/modal/simpleModal/ModalSimple";
+import LoaderModal from "@/components/modal/Loader/LoaderModal";
 import { Credit } from "../solicitudes/CreditDetails/Credit";
-import { GetCredit } from "../../api/credit/GetCredits";
-import { calcularPago } from "../../utils/amortizacion/Credit";
+import { GetCredit } from "@/api/credit/GetCredits";
+import { calcularPago } from "@/utils/amortizacion/Credit";
 import "../solicitudes/solicitudes.css";
 import "./cobros.css"
 import { pdf } from "@react-pdf/renderer";
 import { saveAs } from "file-saver";
 import ReciboPago from "../../pdf/ReciboPago";
-import { CreatePayment } from "../../api/payments/CreatePayment";
-import { useAppStore } from "../../store/appStore";
+import { CreatePayment } from "@/api/payments/CreatePayment";
+import { useAppStore } from "@/store/appStore";
 
 interface PagoProps {
 

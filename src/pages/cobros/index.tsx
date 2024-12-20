@@ -1,23 +1,23 @@
 import { FC, useEffect, useRef, useState } from "react";
-import { Layout } from "../../components/Layout";
-import "../../components/tabs/tabs.css";
-import { openContent } from "../../components/tabs";
+import { Layout } from "@/components/Layout";
+import "@/components/tabs/tabs.css";
+import { openContent } from "@/components/tabs";
 import "../solicitudes/solicitudes.css";
 import "./cobros.css";
-import { searchUser } from "../../api/user/userData";
-import SimpleModal from "../../components/modal/simpleModal/ModalSimple";
-import LoaderModal from "../../components/modal/Loader/LoaderModal";
-import { GetCreditsByUser } from "../../api/credit/GetCredits";
-import { TableContentIndvidual, TableHeaderType, TableRowType } from "../../components/Table/TableTypes";
-import { useAppStore } from "../../store/appStore";
-import { formatUtcToLocal } from "../../utils/formats/formatToLocal";
+import { searchUser } from "@/api/user/userData";
+import SimpleModal from "@/components/modal/simpleModal/ModalSimple";
+import LoaderModal from "@/components/modal/Loader/LoaderModal";
+import { GetCreditsByUser } from "@/api/credit/GetCredits";
+import { TableContentIndvidual, TableHeaderType, TableRowType } from "@/components/Table/TableTypes";
+import { useAppStore } from "@/store/appStore";
+import { formatUtcToLocal } from "@/utils/formats/formatToLocal";
 import { FaDollarSign, FaEye, FaList } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import { TableContextProvider } from "../../components/Table/TableService";
-import { TableContainer } from "../../components/Table/TableContainer";
-import { Loader } from "../../components/Loader";
-import { GetPaymentsOfCredit } from "../../api/payments/GetPayments";
-import { Status } from "../../constants/credits/Credit";
+import { TableContextProvider } from "@/components/Table/TableService";
+import { TableContainer } from "@/components/Table/TableContainer";
+import { Loader } from "@/components/Loader";
+import { GetPaymentsOfCredit } from "@/api/payments/GetPayments";
+import { Status } from "@/constants/credits/Credit";
 
 const rowkeys = [
   "id",

@@ -1,28 +1,28 @@
 import { FC, useCallback, useEffect, useRef, useState } from "react";
-import { Layout } from "../../components/Layout";
-import "../../components/tabs/tabs.css";
-import { openContent } from "../../components/tabs";
+import { Layout } from "@/components/Layout";
+import "@/components/tabs/tabs.css";
+import { openContent } from "@/components/tabs";
 import "./admin_usuarios.css"
-import { Roles } from "../../constants/permisions/Roles";
-import { getUsers, searchUser } from "../../api/user/userData";
-import { TableContentIndvidual, TableHeaderType, TableRowType } from "../../components/Table/TableTypes";
-import { useAppStore } from "../../store/appStore";
-import { formatUtcToLocal } from "../../utils/formats/formatToLocal";
+import { Roles } from "@/constants/permisions/Roles";
+import { getUsers, searchUser } from "@/api/user/userData";
+import { TableContentIndvidual, TableHeaderType, TableRowType } from "@/components/Table/TableTypes";
+import { useAppStore } from "@/store/appStore";
+import { formatUtcToLocal } from "@/utils/formats/formatToLocal";
 import { FaEye, FaTrash } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import { TableContextProvider } from "../../components/Table/TableService";
-import { TableContainer } from "../../components/Table/TableContainer";
+import { TableContextProvider } from "@/components/Table/TableService";
+import { TableContainer } from "@/components/Table/TableContainer";
 import { FiRefreshCw } from "react-icons/fi";
 import { FilterPortal } from "./RoleFilterPortal";
 import { debounce } from "lodash";
-import { Loader } from "../../components/Loader";
-import SimpleModal from "../../components/modal/simpleModal/ModalSimple";
-import LoaderModal from "../../components/modal/Loader/LoaderModal";
+import { Loader } from "@/components/Loader";
+import SimpleModal from "@/components/modal/simpleModal/ModalSimple";
+import LoaderModal from "@/components/modal/Loader/LoaderModal";
 import "../solicitudes/solicitudes.css";
-import { DeleteUser } from "../../api/user/DeleteUser";
-import { deleteFile } from "../../api/files/DeleteFiles";
-import { CreateUser } from "../../api/user/CreateUser";
-import { uploadFile } from "../../api/files/UploadFile";
+import { DeleteUser } from "@/api/user/DeleteUser";
+import { deleteFile } from "@/api/files/DeleteFiles";
+import { CreateUser } from "@/api/user/CreateUser";
+import { uploadFile } from "@/api/files/UploadFile";
 
 export interface Usuario {
   id: number;

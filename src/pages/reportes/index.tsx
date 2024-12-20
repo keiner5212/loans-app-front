@@ -1,9 +1,9 @@
 import { FC, useEffect, useRef, useState } from "react";
-import { Layout } from "../../components/Layout";
-import "../../components/tabs/tabs.css";
-import { openContent } from "../../components/tabs";
+import { Layout } from "@/components/Layout";
+import "@/components/tabs/tabs.css";
+import { openContent } from "@/components/tabs";
 import "./reportes.css";
-import SimpleModal from "../../components/modal/simpleModal/ModalSimple";
+import SimpleModal from "@/components/modal/simpleModal/ModalSimple";
 
 // Solicitudes de prueba
 const prestamosPrueba = [

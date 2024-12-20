@@ -32,6 +32,7 @@ import { searchUser } from "../../api/user/userData";
 import { AmortizationRow, calcularPago, calcularTabla } from "../../utils/amortizacion/Credit";
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
+import CustomCheckbox from "../../components/check";
 
 const rowkeys = [
   "id",
@@ -107,6 +108,7 @@ const Solicitudes: FC = () => {
   const defaultTabRef = useRef<HTMLButtonElement>(null);
   const { theme, userInfo } = useAppStore();
   const [interestRate, setInterestRate] = useState(0);
+  const [isOldUser, setIsOldUser] = useState(false);
 
   useEffect(() => {
     if (defaultTabRef.current) {
@@ -204,6 +206,36 @@ const Solicitudes: FC = () => {
   };
 
   const verifyUserData = (): boolean => {
+
+    if (!user.document) {
+      setModalData({
+        isOpen: true,
+        title: "Error",
+        message: "Debes ingresar el número de documento del usuario.",
+        hasTwoButtons: false,
+        button1Text: "Ok",
+        button2Text: "",
+        closeOnOutsideClick: false,
+      })
+      return false
+    }
+
+    if (!user.email) {
+      setModalData({
+        isOpen: true,
+        title: "Error",
+        message: "Debes ingresar el correo del usuario.",
+        hasTwoButtons: false,
+        button1Text: "Ok",
+        button2Text: "",
+        closeOnOutsideClick: false,
+      })
+      return false
+    }
+
+    //this is enough for old users
+    if (isOldUser) return true;
+
     if (!user.name) {
       setModalData({
         isOpen: true,
@@ -252,35 +284,11 @@ const Solicitudes: FC = () => {
       })
       return false
     }
-    if (!user.document) {
-      setModalData({
-        isOpen: true,
-        title: "Error",
-        message: "Debes ingresar el número de documento del usuario.",
-        hasTwoButtons: false,
-        button1Text: "Ok",
-        button2Text: "",
-        closeOnOutsideClick: false,
-      })
-      return false
-    }
     if (!user.phone) {
       setModalData({
         isOpen: true,
         title: "Error",
         message: "Debes ingresar el teléfono del usuario.",
-        hasTwoButtons: false,
-        button1Text: "Ok",
-        button2Text: "",
-        closeOnOutsideClick: false,
-      })
-      return false
-    }
-    if (!user.email) {
-      setModalData({
-        isOpen: true,
-        title: "Error",
-        message: "Debes ingresar el correo del usuario.",
         hasTwoButtons: false,
         button1Text: "Ok",
         button2Text: "",
@@ -366,10 +374,12 @@ const Solicitudes: FC = () => {
 
     // verify user data
     const isValid = verifyUserData();
-
+    let userExistentEmail = null;
     const userExistentDocument = await searchUser(user.document);
-    const userExistentEmail = await searchUser(user.email);
-    if (userExistentDocument.user || userExistentEmail.user) {
+    if (!userExistentDocument.user) {
+      userExistentEmail = await searchUser(user.email);
+    }
+    if ((userExistentDocument.user || userExistentEmail.user) && !isOldUser) {
       setModalData({
         isOpen: true,
         title: "Error",
@@ -509,9 +519,14 @@ const Solicitudes: FC = () => {
     e.preventDefault();
     setLoadingRequest(true);
 
+    // verify user data
+    const isValid = verifyUserData();
+    let userExistentEmail = null;
     const userExistentDocument = await searchUser(user.document);
-    const userExistentEmail = await searchUser(user.email);
-    if (userExistentDocument.user || userExistentEmail.user) {
+    if (!userExistentDocument.user) {
+      userExistentEmail = await searchUser(user.email);
+    }
+    if ((userExistentDocument.user || userExistentEmail.user) && !isOldUser) {
       setModalData({
         isOpen: true,
         title: "Error",
@@ -530,8 +545,6 @@ const Solicitudes: FC = () => {
       ExistentUser = userExistentEmail.user;
     }
 
-    // verify user data
-    const isValid = verifyUserData();
     if (isValid) {
 
       if (!financing.period || financing.period === "0") {
@@ -1033,107 +1046,137 @@ const Solicitudes: FC = () => {
 
         <form ref={forCreditoref} onSubmit={handleSubmitSolCredito} className={theme} >
           <h4 id="user-data-sub">Datos de usuario</h4>
-          <div>
-            <label>Nombre:</label>
-            <input
-              type="text"
-              name="name"
-              value={user.name}
-              onChange={handleUserChange}
-              required
-            />
+          <div className="checker-contain">
+            <CustomCheckbox label="Es un usuario antiguo" onChange={(checked) => setIsOldUser(checked)} value={isOldUser} />
           </div>
-          <div>
-            <label>Edad:</label>
-            <input
-              type="number"
-              name="age"
-              value={user.age}
-              onChange={handleUserChange}
-              required
-            />
-          </div>
-          <div>
-            <label>Ubicacion (croquis):</label>
-            <input
-              type="file"
-              name="locationCroquis"
-              required
-              accept="image/*"
-              onChange={handleFileInputChange}
-            />
-          </div>
-          <div>
-            <label>Documento (cara de frente):</label>
-            <input
-              type="file"
-              name="documentImageFront"
-              required
-              accept="image/*"
-              onChange={handleFileInputChange}
-            />
-          </div>
-          <div>
-            <label>Documento (cara de atras):</label>
-            <input
-              type="file"
-              name="documentImageBack"
-              required
-              accept="image/*"
-              onChange={handleFileInputChange}
-            />
-          </div>
-          <div>
-            <label>Constancia de ingresos:</label>
-            <input
-              type="file"
-              name="proofOfIncome"
-              required
-              onChange={handleFileInputChange}
-            />
-          </div>
-          <div>
-            <label>Email:</label>
-            <input
-              type="email"
-              name="email"
-              value={user.email}
-              onChange={handleUserChange}
-              required
-            />
-          </div>
-          <div>
-            <label>Tipo de documento:</label>
-            <input
-              type="text"
-              name="document_type"
-              value={user.document_type}
-              onChange={handleUserChange}
-              required
-            />
-          </div>
-          <div>
-            <label>Documento:</label>
-            <input
-              type="text"
-              name="document"
-              value={user.document}
-              onChange={handleUserChange}
-              required
-            />
-          </div>
-          <div>
-            <label>Teléfono:</label>
-            <input
-              type="tel"
-              name="phone"
-              value={user.phone}
-              onChange={handleUserChange}
-              required
-            />
-          </div>
+          {isOldUser ?
+            <>
+              <div>
+                <label>Documento:</label>
+                <input
+                  type="text"
+                  name="document"
+                  value={user.document}
+                  onChange={handleUserChange}
+                  required
+                />
+              </div>
+              <div>
+                <label>Email:</label>
+                <input
+                  type="email"
+                  name="email"
+                  value={user.email}
+                  onChange={handleUserChange}
+                  required
+                />
+              </div>
+            </>
+            :
+            <>
+              <div>
+                <label>Nombre:</label>
+                <input
+                  type="text"
+                  name="name"
+                  value={user.name}
+                  onChange={handleUserChange}
+                  required
+                />
+              </div>
+              <div>
+                <label>Edad:</label>
+                <input
+                  type="number"
+                  name="age"
+                  value={user.age}
+                  onChange={handleUserChange}
+                  required
+                />
+              </div>
+              <div>
+                <label>Ubicacion (croquis):</label>
+                <input
+                  type="file"
+                  name="locationCroquis"
+                  required
+                  accept="image/*"
+                  onChange={handleFileInputChange}
+                />
+              </div>
+              <div>
+                <label>Documento (cara de frente):</label>
+                <input
+                  type="file"
+                  name="documentImageFront"
+                  required
+                  accept="image/*"
+                  onChange={handleFileInputChange}
+                />
+              </div>
+              <div>
+                <label>Documento (cara de atras):</label>
+                <input
+                  type="file"
+                  name="documentImageBack"
+                  required
+                  accept="image/*"
+                  onChange={handleFileInputChange}
+                />
+              </div>
+              <div>
+                <label>Constancia de ingresos:</label>
+                <input
+                  type="file"
+                  name="proofOfIncome"
+                  required
+                  onChange={handleFileInputChange}
+                />
+              </div>
+              <div>
+                <label>Email:</label>
+                <input
+                  type="email"
+                  name="email"
+                  value={user.email}
+                  onChange={handleUserChange}
+                  required
+                />
+              </div>
+              <div>
+                <label>Tipo de documento:</label>
+                <input
+                  type="text"
+                  name="document_type"
+                  value={user.document_type}
+                  onChange={handleUserChange}
+                  required
+                />
+              </div>
+              <div>
+                <label>Documento:</label>
+                <input
+                  type="text"
+                  name="document"
+                  value={user.document}
+                  onChange={handleUserChange}
+                  required
+                />
+              </div>
+              <div>
+                <label>Teléfono:</label>
+                <input
+                  type="tel"
+                  name="phone"
+                  value={user.phone}
+                  onChange={handleUserChange}
+                  required
+                />
+              </div>
 
-          <h4 id="request-data-sub">Datos de solicitud</h4>
+            </>}
+
+          <h4 id="request-data-sub" className={isOldUser ? "oldUser" : ""}>Datos de solicitud</h4>
           <div>
             <label>Monto solicitado:</label>
             <input
@@ -1215,107 +1258,138 @@ const Solicitudes: FC = () => {
 
         <form ref={forFinancingref} onSubmit={handleSubmitSolFinanciamiento} className={theme} >
           <h4 id="user-data-sub">Datos de usuario</h4>
-          <div>
-            <label>Nombre:</label>
-            <input
-              type="text"
-              name="name"
-              value={user.name}
-              onChange={handleUserChange}
-              required
-            />
-          </div>
-          <div>
-            <label>Edad:</label>
-            <input
-              type="number"
-              name="age"
-              value={user.age}
-              onChange={handleUserChange}
-              required
-            />
-          </div>
-          <div>
-            <label>Ubicacion (croquis):</label>
-            <input
-              type="file"
-              name="locationCroquis"
-              required
-              accept="image/*"
-              onChange={handleFileInputChange}
-            />
-          </div>
-          <div>
-            <label>Documento (cara de frente):</label>
-            <input
-              type="file"
-              name="documentImageFront"
-              required
-              accept="image/*"
-              onChange={handleFileInputChange}
-            />
-          </div>
-          <div>
-            <label>Documento (cara de atras):</label>
-            <input
-              type="file"
-              name="documentImageBack"
-              required
-              accept="image/*"
-              onChange={handleFileInputChange}
-            />
-          </div>
-          <div>
-            <label>Constancia de ingresos:</label>
-            <input
-              type="file"
-              name="proofOfIncome"
-              required
-              onChange={handleFileInputChange}
-            />
-          </div>
-          <div>
-            <label>Email:</label>
-            <input
-              type="email"
-              name="email"
-              value={user.email}
-              onChange={handleUserChange}
-              required
-            />
-          </div>
-          <div>
-            <label>Tipo de documento:</label>
-            <input
-              type="text"
-              name="document_type"
-              value={user.document_type}
-              onChange={handleUserChange}
-              required
-            />
-          </div>
-          <div>
-            <label>Documento:</label>
-            <input
-              type="text"
-              name="document"
-              value={user.document}
-              onChange={handleUserChange}
-              required
-            />
-          </div>
-          <div>
-            <label>Teléfono:</label>
-            <input
-              type="tel"
-              name="phone"
-              value={user.phone}
-              onChange={handleUserChange}
-              required
-            />
-          </div>
 
-          <h4 id="request-data-sub">Datos de solicitud</h4>
+          <div className="checker-contain">
+            <CustomCheckbox label="Es un usuario antiguo" onChange={(checked) => setIsOldUser(checked)} value={isOldUser} />
+          </div>
+          {isOldUser ?
+            <>
+              <div>
+                <label>Documento:</label>
+                <input
+                  type="text"
+                  name="document"
+                  value={user.document}
+                  onChange={handleUserChange}
+                  required
+                />
+              </div>
+              <div>
+                <label>Email:</label>
+                <input
+                  type="email"
+                  name="email"
+                  value={user.email}
+                  onChange={handleUserChange}
+                  required
+                />
+              </div>
+            </>
+            :
+            <>
+              <div>
+                <label>Nombre:</label>
+                <input
+                  type="text"
+                  name="name"
+                  value={user.name}
+                  onChange={handleUserChange}
+                  required
+                />
+              </div>
+              <div>
+                <label>Edad:</label>
+                <input
+                  type="number"
+                  name="age"
+                  value={user.age}
+                  onChange={handleUserChange}
+                  required
+                />
+              </div>
+              <div>
+                <label>Ubicacion (croquis):</label>
+                <input
+                  type="file"
+                  name="locationCroquis"
+                  required
+                  accept="image/*"
+                  onChange={handleFileInputChange}
+                />
+              </div>
+              <div>
+                <label>Documento (cara de frente):</label>
+                <input
+                  type="file"
+                  name="documentImageFront"
+                  required
+                  accept="image/*"
+                  onChange={handleFileInputChange}
+                />
+              </div>
+              <div>
+                <label>Documento (cara de atras):</label>
+                <input
+                  type="file"
+                  name="documentImageBack"
+                  required
+                  accept="image/*"
+                  onChange={handleFileInputChange}
+                />
+              </div>
+              <div>
+                <label>Constancia de ingresos:</label>
+                <input
+                  type="file"
+                  name="proofOfIncome"
+                  required
+                  onChange={handleFileInputChange}
+                />
+              </div>
+              <div>
+                <label>Email:</label>
+                <input
+                  type="email"
+                  name="email"
+                  value={user.email}
+                  onChange={handleUserChange}
+                  required
+                />
+              </div>
+              <div>
+                <label>Tipo de documento:</label>
+                <input
+                  type="text"
+                  name="document_type"
+                  value={user.document_type}
+                  onChange={handleUserChange}
+                  required
+                />
+              </div>
+              <div>
+                <label>Documento:</label>
+                <input
+                  type="text"
+                  name="document"
+                  value={user.document}
+                  onChange={handleUserChange}
+                  required
+                />
+              </div>
+              <div>
+                <label>Teléfono:</label>
+                <input
+                  type="tel"
+                  name="phone"
+                  value={user.phone}
+                  onChange={handleUserChange}
+                  required
+                />
+              </div>
+
+            </>}
+
+          <h4 id="request-data-sub" className={isOldUser ? "oldUser" : ""}>Datos de solicitud</h4>
           <div>
             <label>Vehiculo Solicitado (VIN):</label>
             <input

@@ -18,14 +18,22 @@ const Configuracion: FC = () => {
     const { theme } = useAppStore();
     const [loadingRequest, setLoadingRequest] = useState(false);
     const [signature, setSignature] = useState<File | null>(null);
-    const [previewImage, setPreviewImage] = useState<string | null>(null);
+    const [previewSignature, setPreviewSignature] = useState<string | null>(null);
+    const [documentLogo, setDocumentLogo] = useState<File | null>(null);
+    const [previewLogo, setPreviewLogo] = useState<string | null>(null);
 
     const [formData, setFormData] = useState({
         signaturefromApi: null,
+        documentLogofromApi: null,
         interestRate: 0,
         alertFrequency: "Diaria",
         maxCreditAmount: 0,
         minCreditAmount: 0,
+        documentName: "",
+        companyRegistration: "",
+        companyAddress: "",
+        companyPhone: "",
+        companyEmail: "",
     });
 
     useEffect(() => {
@@ -39,15 +47,27 @@ const Configuracion: FC = () => {
                 const interestRateRes = await getConfig(Config.INTEREST_RATE);
                 const alertFrequencyRes = await getConfig(Config.ALERT_FREQUENCY);
                 const signatureRes = await getConfig(Config.SIGNATURE);
+                const documentLogoRes = await getConfig(Config.DOCUMENT_LOGO);
                 const maxCreditAmountRes = await getConfig(Config.MAX_CREDIT_AMOUNT);
                 const minCreditAmountRes = await getConfig(Config.MIN_CREDIT_AMOUNT);
+                const documentNameRes = await getConfig(Config.DOCUMENT_NAME);
+                const companyRegistrationRes = await getConfig(Config.COMPANY_REGISTRATION);
+                const companyAddressRes = await getConfig(Config.COMPANY_ADDRESS);
+                const companyPhoneRes = await getConfig(Config.COMPANY_PHONE);
+                const companyEmailRes = await getConfig(Config.COMPANY_EMAIL);
 
                 setFormData({
                     interestRate: parseFloat(interestRateRes?.data.value || "0"),
                     alertFrequency: alertFrequencyRes?.data.value || "Diaria",
                     signaturefromApi: signatureRes?.data.value || null,
+                    documentLogofromApi: documentLogoRes?.data.value || null,
                     maxCreditAmount: parseFloat(maxCreditAmountRes?.data.value || "0"),
                     minCreditAmount: parseFloat(minCreditAmountRes?.data.value || "0"),
+                    documentName: documentNameRes?.data.value || "",
+                    companyRegistration: companyRegistrationRes?.data.value || "",
+                    companyAddress: companyAddressRes?.data.value || "",
+                    companyPhone: companyPhoneRes?.data.value || "",
+                    companyEmail: companyEmailRes?.data.value || "",
                 });
                 setLoadingRequest(false);
             } catch (error) {
@@ -68,7 +88,7 @@ const Configuracion: FC = () => {
             getFile(formData.signaturefromApi).then((response) => {
                 if (response) {
                     const previewUrl = URL.createObjectURL(response);
-                    setPreviewImage(previewUrl);
+                    setPreviewSignature(previewUrl);
                 }
             }).finally(() => {
                 setLoadingRequest(false);
@@ -76,16 +96,35 @@ const Configuracion: FC = () => {
         }
     }, [formData.signaturefromApi]);
 
+
+    useEffect(() => {
+        if (formData.documentLogofromApi) {
+            setLoadingRequest(true);
+            getFile(formData.documentLogofromApi).then((response) => {
+                if (response) {
+                    const previewUrl = URL.createObjectURL(response);
+                    setPreviewLogo(previewUrl);
+                }
+            }).finally(() => {
+                setLoadingRequest(false);
+            });
+        }
+    }, [formData.documentLogofromApi]);
+
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
         setFormData((prev) => ({ ...prev, [name]: value }));
     };
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileChange = (
+        e: React.ChangeEvent<HTMLInputElement>,
+        setFile: React.Dispatch<React.SetStateAction<File | null>>,
+        setPreview: React.Dispatch<React.SetStateAction<string | null>>
+    ) => {
         if (e.target.files && e.target.files.length > 0) {
             const file = e.target.files[0];
-            setSignature(file);
-            setPreviewImage(URL.createObjectURL(file));
+            setFile(file);
+            setPreview(URL.createObjectURL(file));
         }
     };
 
@@ -98,6 +137,7 @@ const Configuracion: FC = () => {
 
         try {
             let signaturePath = formData.signaturefromApi;
+            let documentLogoPath = formData.documentLogofromApi;
 
             if (signature) {
                 const fileSaved = await uploadFile(signature);
@@ -106,11 +146,24 @@ const Configuracion: FC = () => {
                 }
             }
 
+            if (documentLogo) {
+                const fileSaved = await uploadFile(documentLogo);
+                if (fileSaved) {
+                    documentLogoPath = fileSaved.filePath;
+                }
+            }
+
             await setConfig(Config.INTEREST_RATE, formData.interestRate.toString());
             await setConfig(Config.ALERT_FREQUENCY, formData.alertFrequency);
-            await setConfig(Config.SIGNATURE, signaturePath || '');
+            await setConfig(Config.SIGNATURE, signaturePath || "");
+            await setConfig(Config.DOCUMENT_LOGO, documentLogoPath || "");
             await setConfig(Config.MAX_CREDIT_AMOUNT, formData.maxCreditAmount.toString());
             await setConfig(Config.MIN_CREDIT_AMOUNT, formData.minCreditAmount.toString());
+            await setConfig(Config.DOCUMENT_NAME, formData.documentName);
+            await setConfig(Config.COMPANY_REGISTRATION, formData.companyRegistration);
+            await setConfig(Config.COMPANY_ADDRESS, formData.companyAddress);
+            await setConfig(Config.COMPANY_PHONE, formData.companyPhone);
+            await setConfig(Config.COMPANY_EMAIL, formData.companyEmail);
 
             setLoadingRequest(false);
 
@@ -127,7 +180,6 @@ const Configuracion: FC = () => {
             });
         }
     };
-
 
     return (
         <Layout>
@@ -190,11 +242,56 @@ const Configuracion: FC = () => {
                         />
                     </div>
                     <div>
+                        <label>Nombre de la Empresa:</label>
+                        <input
+                            type="text"
+                            name="documentName"
+                            value={formData.documentName}
+                            onChange={handleInputChange}
+                        />
+                    </div>
+                    <div>
+                        <label>Registro de la Empresa:</label>
+                        <input
+                            type="text"
+                            name="companyRegistration"
+                            value={formData.companyRegistration}
+                            onChange={handleInputChange}
+                        />
+                    </div>
+                    <div>
+                        <label>Dirección de la Empresa:</label>
+                        <input
+                            type="text"
+                            name="companyAddress"
+                            value={formData.companyAddress}
+                            onChange={handleInputChange}
+                        />
+                    </div>
+                    <div>
+                        <label>Teléfono de la Empresa:</label>
+                        <input
+                            type="text"
+                            name="companyPhone"
+                            value={formData.companyPhone}
+                            onChange={handleInputChange}
+                        />
+                    </div>
+                    <div>
+                        <label>Email de la Empresa:</label>
+                        <input
+                            type="email"
+                            name="companyEmail"
+                            value={formData.companyEmail}
+                            onChange={handleInputChange}
+                        />
+                    </div>
+                    <div>
                         <label>Subir Firma:</label>
-                        {previewImage ? (
+                        {previewSignature ? (
                             <div className="signature-preview">
                                 <img
-                                    src={previewImage}
+                                    src={previewSignature}
                                     alt="Firma"
                                     style={{ maxWidth: "200px", maxHeight: "100px" }}
                                 />
@@ -202,7 +299,7 @@ const Configuracion: FC = () => {
                                     type="button"
                                     onClick={() => {
                                         setSignature(null);
-                                        setPreviewImage(null);
+                                        setPreviewSignature(null);
                                     }}
                                 >
                                     Cambiar Firma
@@ -212,7 +309,38 @@ const Configuracion: FC = () => {
                             <input
                                 type="file"
                                 accept="image/*"
-                                onChange={handleFileChange}
+                                onChange={(e) => {
+                                    handleFileChange(e, setSignature, setPreviewSignature);
+                                }}
+                            />
+                        )}
+                    </div>
+                    <div>
+                        <label>Subir Logo para Documentos:</label>
+                        {previewLogo ? (
+                            <div className="logo-preview">
+                                <img
+                                    src={previewLogo}
+                                    alt="Logo"
+                                    style={{ maxWidth: "200px", maxHeight: "100px" }}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setDocumentLogo(null);
+                                        setPreviewLogo(null);
+                                    }}
+                                >
+                                    Cambiar Logo
+                                </button>
+                            </div>
+                        ) : (
+                            <input
+                                type="file"
+                                accept="image/*"
+                                onChange={(e) => {
+                                    handleFileChange(e, setDocumentLogo, setPreviewLogo);
+                                }}
                             />
                         )}
                     </div>
@@ -232,6 +360,7 @@ const Configuracion: FC = () => {
             />
         </Layout>
     );
+
 };
 
 export default Configuracion;

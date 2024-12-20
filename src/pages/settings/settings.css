@@ -2,7 +2,7 @@
     display: flex;
     padding: 20px;
 
-    & .dark{
+    & .dark {
         color: #c4c4c4;
     }
 }
@@ -56,6 +56,7 @@
 #configuraciones select,
 #configuraciones input[type="file"],
 #configuraciones input[type="text"],
+#configuraciones input[type="email"],
 #configuraciones input[type="number"] {
     width: 100%;
     padding: 10px;
@@ -64,7 +65,8 @@
     margin-bottom: 15px;
 }
 
-.signature-preview{
+.signature-preview,
+.logo-preview {
     display: flex;
     flex-direction: column;
     align-items: center;

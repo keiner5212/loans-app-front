@@ -1,11 +1,11 @@
 import { FunctionComponent, useState } from "react";
-import { Layout } from "../@/components/Layout";
+import { Layout } from "@/components/Layout";
 import { useNavigate, useParams } from "react-router-dom";
 import "./release.css";
 import ContratoContainer from "../../../pdf/ContratoContainer";
-import { uploadFile } from "../@/api/files/UploadFile";
-import { SaveCreditContract } from "../@/api/credit/SaveSignature";
-import SimpleModal from "../@/components/modal/simpleModal/ModalSimple";
+import { uploadFile } from "@/api/files/UploadFile";
+import { SaveCreditContract } from "@/api/credit/SaveSignature";
+import SimpleModal from "@/components/modal/simpleModal/ModalSimple";
 
 interface DesembolseProps { }
 

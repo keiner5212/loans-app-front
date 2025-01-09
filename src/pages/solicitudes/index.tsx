@@ -108,6 +108,8 @@ const Solicitudes: FC = () => {
   const defaultTabRef = useRef<HTMLButtonElement>(null);
   const { theme, userInfo } = useAppStore();
   const [interestRate, setInterestRate] = useState(0);
+  const [maxCreditAmountRes, setMaxCreditAmountRes] = useState(0);
+  const [minCreditAmountRes, setMinCreditAmountRes] = useState(0);
   const [isOldUser, setIsOldUser] = useState(false);
 
   useEffect(() => {
@@ -115,6 +117,9 @@ const Solicitudes: FC = () => {
       defaultTabRef.current.click();
     }
     getConfig(Config.INTEREST_RATE).then((res) => setInterestRate(parseFloat(res?.data.value) * 100));
+
+    getConfig(Config.MAX_CREDIT_AMOUNT).then((res) => setMaxCreditAmountRes(parseFloat(res?.data.value)));
+    getConfig(Config.MIN_CREDIT_AMOUNT).then((res) => setMinCreditAmountRes(parseFloat(res?.data.value)));
     GetCredits().then((res) => {
       setSolicitudes(res.data)
       setSolicitudesBack(res.data)
@@ -398,6 +403,35 @@ const Solicitudes: FC = () => {
       ExistentUser = userExistentEmail.user;
     }
 
+    // verify credit data
+    if (minCreditAmountRes != 0) {
+      if (credit.requestedAmount < minCreditAmountRes) {
+        setModalData({
+          isOpen: true,
+          title: "Error",
+          message: `El monto solicitado debe ser mayor a ${minCreditAmountRes}.`,
+          hasTwoButtons: false,
+          button1Text: "Ok",
+          button2Text: "",
+          closeOnOutsideClick: false,
+        })
+      }
+    }
+
+    if (maxCreditAmountRes != 0) {
+      if (credit.requestedAmount > maxCreditAmountRes) {
+        setModalData({
+          isOpen: true,
+          title: "Error",
+          message: `El monto solicitado debe ser menor a ${maxCreditAmountRes}.`,
+          hasTwoButtons: false,
+          button1Text: "Ok",
+          button2Text: "",
+          closeOnOutsideClick: false,
+        })
+      }
+    }
+
     if (isValid) {
 
       if (!credit.period || credit.period === "0") {
@@ -449,8 +483,9 @@ const Solicitudes: FC = () => {
       } else {
         const userToSend = {
           ...user,
-          password: user.document,
+          password: user.document, // use document as password
         }
+
 
         await uploadFiles(userToSend);
 
@@ -1193,7 +1228,7 @@ const Solicitudes: FC = () => {
               type="number"
               name="interestRate"
               value={interestRate}
-              disabled
+              onChange={(e) => setInterestRate(parseFloat(e.target.value))}
               required
             />
           </div>
@@ -1435,7 +1470,7 @@ const Solicitudes: FC = () => {
               type="number"
               name="interestRate"
               value={interestRate}
-              disabled
+              onChange={(e) => setInterestRate(parseFloat(e.target.value))}
               required
             />
           </div>

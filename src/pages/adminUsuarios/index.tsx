@@ -23,6 +23,7 @@ import { DeleteUser } from "@/api/user/DeleteUser";
 import { deleteFile } from "@/api/files/DeleteFiles";
 import { CreateUser } from "@/api/user/CreateUser";
 import { uploadFile } from "@/api/files/UploadFile";
+import { hasPermision } from "@/utils/security/Permisions";
 
 export interface Usuario {
   id: number;
@@ -807,7 +808,13 @@ const AdministrarUsuarios: FC = () => {
               onChange={handleUserChange}
               required
             >
-              {Object.values(Roles).map((role) => (
+              {Object.values(Roles).filter((role) => {
+                if (role != Roles.USER_MASTER) {
+                  return true
+                } else {
+                  return hasPermision(userInfo?.role, Roles.USER_MASTER) //only master can create master users
+                }
+              }).map((role) => (
                 <option key={role} value={role}>
                   {role.replace('USER_', '').replace('_', ' ')}
                 </option>

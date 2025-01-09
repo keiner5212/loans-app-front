@@ -12,6 +12,12 @@ import { setConfig } from "@/api/config/SetConfig";
 import { uploadFile } from "@/api/files/UploadFile";
 import LoaderModal from "@/components/modal/Loader/LoaderModal";
 
+export enum AlertFrequency {
+    DAILY = "Daily",
+    WEEKLY = "Weekly",
+    MONTHLY = "Monthly",
+}
+
 const Configuracion: FC = () => {
     const defaultTabRef = useRef<HTMLButtonElement>(null);
     const [error, setError] = useState({ title: "", message: "", isOpen: false });
@@ -204,9 +210,9 @@ const Configuracion: FC = () => {
                             value={formData.alertFrequency}
                             onChange={handleInputChange}
                         >
-                            <option value="Diaria">Diaria</option>
-                            <option value="Semanal">Semanal</option>
-                            <option value="Mensual">Mensual</option>
+                            <option value={AlertFrequency.DAILY}>Diaria</option>
+                            <option value={AlertFrequency.WEEKLY}>Semanal</option>
+                            <option value={AlertFrequency.MONTHLY}>Mensual</option>
                         </select>
                     </div>
                     <div>
@@ -222,7 +228,7 @@ const Configuracion: FC = () => {
                         <span className={theme}>Equivalente a: {formData.interestRate * 100}%</span>
                     </div>
                     <div>
-                        <label>Monto Máximo de Crédito:</label>
+                        <label>Monto Máximo de Crédito (0 = Desactivado):</label>
                         <input
                             type="number"
                             name="maxCreditAmount"
@@ -232,7 +238,7 @@ const Configuracion: FC = () => {
                         />
                     </div>
                     <div>
-                        <label>Monto Mínimo de Crédito:</label>
+                        <label>Monto Mínimo de Crédito (0 = Desactivado):</label>
                         <input
                             type="number"
                             name="minCreditAmount"

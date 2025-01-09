@@ -70,7 +70,7 @@ export const Layout: FC<Props> = ({ children, loading = false }) => {
       (section) => section.url === window.location.pathname
     );
     if (filtered.length > 0) {
-      setTitle(filtered[0].title);
+      setTitle(filtered[0].title || "");
     }
   }, [window.location.pathname]);
 

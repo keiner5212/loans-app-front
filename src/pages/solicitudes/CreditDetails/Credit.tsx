@@ -1,12 +1,12 @@
 import { FunctionComponent, useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { Layout } from "../@/components/Layout";
-import { GetCredit } from "../@/api/credit/GetCredits";
+import { Layout } from "@/components/Layout";
+import { GetCredit } from "@/api/credit/GetCredits";
 import "./details.css";
-import { LoaderScreen } from "../@/components/Loader/LoaderScreen";
-import { useAppStore } from "../@/store/appStore";
-import { CreditType } from "../@/constants/credits/Credit";
-import { getFile } from "../@/api/files/GetFiles";
+import { LoaderScreen } from "@/components/Loader/LoaderScreen";
+import { useAppStore } from "@/store/appStore";
+import { CreditType } from "@/constants/credits/Credit";
+import { getFile } from "@/api/files/GetFiles";
 
 export interface Credit {
     id: number;

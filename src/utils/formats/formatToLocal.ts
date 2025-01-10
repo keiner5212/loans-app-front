@@ -1,4 +1,6 @@
-export function formatUtcToLocal(utcDateStr: string, locale: string, timeZone: string): string {
+export function formatUtcToLocal(utcDateStr: string | undefined | null, locale: string, timeZone: string): string | undefined {
+    if (!utcDateStr) return undefined;
+
     const localDate = new Date(utcDateStr);
 
     return localDate.toLocaleString(locale, {

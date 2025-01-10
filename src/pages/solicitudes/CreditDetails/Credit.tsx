@@ -7,6 +7,7 @@ import { LoaderScreen } from "@/components/Loader/LoaderScreen";
 import { useAppStore } from "@/store/appStore";
 import { CreditType } from "@/constants/credits/Credit";
 import { getFile } from "@/api/files/GetFiles";
+import { formatUtcToLocal } from "@/utils/formats/formatToLocal";
 
 export interface Credit {
     id: number;
@@ -76,7 +77,7 @@ const CreditDetails: FunctionComponent = () => {
     const renderField = (label: string, value: any) => (
         <div className={"details-field" + " " + theme}>
             <span className="field-label">{label}:</span>
-            <span className="field-value">{value !== null ? value : "No data"}</span>
+            <span className="field-value">{value ? value : "No data"}</span>
         </div>
     );
 
@@ -99,34 +100,46 @@ const CreditDetails: FunctionComponent = () => {
                 {credit ? (
                     <div className="details-grid">
                         {renderField("ID", credit.id)}
-                        {renderField("User ID", <Link to={`/usuarios/${credit.userId}`}>{credit.userId}</Link>)}
-                        {renderField("Credit Type", credit.creditType)}
-                        {renderField("User Creator ID", credit.userCreatorId)}
-                        {renderField("Requested Amount", `$${credit.requestedAmount}`)}
-                        {renderField("Interest Rate", `${credit.interestRate}%`)}
-                        {renderField("Years of Payment", credit.yearsOfPayment)}
-                        {renderField("Period", credit.period)}
-                        {renderField("Status", credit.status)}
-                        {renderField("Application Date", credit.applicationDate)}
-                        {renderField("Approved Date", credit.aprovedDate)}
-                        {renderField("Rejected Date", credit.rejectedDate)}
-                        {renderField("Released Date", credit.releasedDate)}
-                        {renderField("Finished Date", credit.finishedDate)}
-                        {renderField("Last Payment Period", credit.lastPaymentPeriod)}
-                        {renderField("Last Payment Date", credit.lastPaymentDate)}
-                        {credit.signedContract && renderField("Signed Contract URL",
+                        {renderField("ID del Usuario", <Link to={`/usuarios/${credit.userId}`}>{credit.userId}</Link>)}
+                        {renderField("Tipo de Credito", credit.creditType)}
+                        {renderField("Empleado creador", <Link to={`/usuarios/${credit.userCreatorId}`}>{credit.userCreatorId}</Link>)}
+                        {renderField("Cantidad solicitada", `$${credit.requestedAmount}`)}
+                        {renderField("Tasa de Interés", `${credit.interestRate}%`)}
+                        {renderField("Años de Pago", credit.yearsOfPayment)}
+                        {renderField("Periodos", credit.period)}
+                        {renderField("Estado", credit.status)}
+                        {renderField("Fecha de Applicación",
+                            formatUtcToLocal(credit.applicationDate, import.meta.env.VITE_LOCALE, import.meta.env.VITE_TIMEZONE)
+                        )}
+                        {renderField("Fecha de Aprobación",
+                            formatUtcToLocal(credit.aprovedDate, import.meta.env.VITE_LOCALE, import.meta.env.VITE_TIMEZONE)
+                        )}
+                        {renderField("Fecha de Rechazo",
+                            formatUtcToLocal(credit.rejectedDate, import.meta.env.VITE_LOCALE, import.meta.env.VITE_TIMEZONE)
+                        )}
+                        {renderField("Fecha de Desembolso",
+                            formatUtcToLocal(credit.releasedDate, import.meta.env.VITE_LOCALE, import.meta.env.VITE_TIMEZONE)
+                        )}
+                        {renderField("Fecha de Finalización",
+                            formatUtcToLocal(credit.finishedDate, import.meta.env.VITE_LOCALE, import.meta.env.VITE_TIMEZONE)
+                        )}
+                        {renderField("Ultimo Periodo Pagado", credit.lastPaymentPeriod)}
+                        {renderField("Fecha de Ultimo Pago",
+                            formatUtcToLocal(credit.lastPaymentDate, import.meta.env.VITE_LOCALE, import.meta.env.VITE_TIMEZONE)
+                        )}
+                        {credit.signedContract && renderField("Contrato Firmado",
                             <a href={contractSignedUrl || ""} target="_blank" >View Signed Contract</a>
                         )}
-                        {renderField("Signed Contract", credit.signedContract)}
+                        {renderField("Contrato Firmado", credit.signedContract)}
                         {credit.creditType == CreditType.FINANCING && <>
                             {
                                 financing &&
                                 <>
-                                    {renderField("Financing ID", financing.id)}
-                                    {renderField("Vehicle Plate", financing.vehiclePlate)}
-                                    {renderField("Vehicle VIN", financing.vehicleVIN)}
-                                    {renderField("Vehicle Description", financing.vehicleDescription)}
-                                    {renderField("Down Payment", `$${financing.downPayment}`)}
+                                    {renderField("ID de Financiamiento", financing.id)}
+                                    {renderField("Placa del Vehiculo", financing.vehiclePlate)}
+                                    {renderField("VIN del Vehiculo", financing.vehicleVIN)}
+                                    {renderField("Descripcion del Vehiculo", financing.vehicleDescription)}
+                                    {renderField("Anticipo", `$${financing.downPayment}`)}
                                 </>
                             }
                         </>}

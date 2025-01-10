@@ -65,3 +65,47 @@ export const calcularTabla = (tasaInteres: number, deuda: number, pagoInicial: n
 
     return { tabla, totalPagado, totalIntereses, totalAmortizado };
 };
+
+
+export const obtenerDetallePeriodo = (
+    tasaInteres: number,
+    deuda: number,
+    pagoInicial: number,
+    periodos: number,
+    CreditPeriod: number,
+    periodoEspecifico: number
+) => {
+    const tasaPeriodo = convertMonthlyRate(tasaInteres, CreditPeriod); // Convertir tasa mensual a la tasa específica
+    const deudaRestante = deuda - pagoInicial; // Deuda después del pago inicial
+    const pagoPeriodo = (deudaRestante * tasaPeriodo * Math.pow(1 + tasaPeriodo, periodos)) / (Math.pow(1 + tasaPeriodo, periodos) - 1); // Calcular pago mensual
+
+    let deudaActual = deudaRestante;
+
+    // Calcular los pagos hasta el periodo específico
+    for (let i = 1; i <= periodoEspecifico; i++) {
+        const intereses = deudaActual * tasaPeriodo;
+        const amortizacion = pagoPeriodo - intereses;
+        deudaActual -= amortizacion;
+
+        // Asegurarnos de que la deuda no sea negativa
+        deudaActual = Math.max(deudaActual, 0);
+        // Asegurarse de que la deuda no sea absurdamente pequeña por errores en la resta
+        if (deudaActual < 1e-8) deudaActual = 0;
+
+        // Si llegamos al periodo solicitado, devolvemos el desglose
+        if (i === periodoEspecifico) {
+            return {
+                payment: pagoPeriodo,
+                amortization: amortizacion,
+                interest: intereses,
+            };
+        }
+    }
+
+    // Si el periodo es más allá del total de los periodos, devolver un objeto con 0s
+    return {
+        payment: 0,
+        amortization: 0,
+        interest: 0,
+    };
+};

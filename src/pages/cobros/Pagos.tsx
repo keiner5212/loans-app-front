@@ -14,6 +14,13 @@ import ReciboPago from "../../pdf/ReciboPago";
 import { CreatePayment } from "@/api/payments/CreatePayment";
 import { useAppStore } from "@/store/appStore";
 
+export enum PaymentStatus {
+    PENDING = "PENDING",
+    LATE = "LATE",
+    RELEASED = "RELEASED",
+    LATE_RELEASED = "LATE_RELEASED",
+}
+
 interface PagoProps {
 
 }

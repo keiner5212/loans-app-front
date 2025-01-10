@@ -7,7 +7,7 @@ import "./cobros.css";
 import { searchUser } from "@/api/user/userData";
 import SimpleModal from "@/components/modal/simpleModal/ModalSimple";
 import LoaderModal from "@/components/modal/Loader/LoaderModal";
-import { GetCreditsByUser } from "@/api/credit/GetCredits";
+import { GetCredit, GetCreditsByUser } from "@/api/credit/GetCredits";
 import { TableContentIndvidual, TableHeaderType, TableRowType } from "@/components/Table/TableTypes";
 import { useAppStore } from "@/store/appStore";
 import { formatUtcToLocal } from "@/utils/formats/formatToLocal";
@@ -18,6 +18,9 @@ import { TableContainer } from "@/components/Table/TableContainer";
 import { Loader } from "@/components/Loader";
 import { GetPaymentsOfCredit } from "@/api/payments/GetPayments";
 import { Status } from "@/constants/credits/Credit";
+import { obtenerDetallePeriodo } from "@/utils/amortizacion/Credit";
+
+// TODO: eliminar la opcion de pagar credito desde la tabla de creditos, que se pague directamente en la tabla de pagos
 
 const rowkeys = [
   "id",
@@ -41,14 +44,24 @@ const columnas = [
 const pagosColumnas = [
   "ID",
   "Monto",
-  "Fecha",
+  "Amortización",
+  "Interés",
+  "ID del creador",
+  "Estado",
+  "Fecha de pago",
+  "Fecha de pago oportuno",
   "Periodo"
 ]
 
 const pagosRowKeys = [
   "id",
   "amount",
-  "date",
+  "amortization",
+  "interest",
+  "userCreatorId",
+  "status",
+  "paymentDate",
+  "timelyPayment",
   "period"
 ]
 
@@ -75,13 +88,36 @@ const Cobros: FC = () => {
 
   const [payments, setPayments] = useState([]);
 
+  const [selectedCreditData, setSelectedCreditData] = useState<any>({});
+
   useEffect(() => {
     setLoadingRequest(true);
     if (selectedCredit) {
+      const credit = selectedCreditData.credit;
+      const financing = selectedCreditData.financing;
+
       GetPaymentsOfCredit(selectedCredit).then((res) => {
         setLoadingRequest(false);
         if (res.data && res.data.length > 0) {
-          setPayments(res.data);
+          setPayments(res.data.map((paymentData: any) => {
+            const {
+              amortization,
+              interest
+            } = obtenerDetallePeriodo(
+              credit.interestRate / 100,
+              credit.requestedAmount,
+              financing ? financing.downPayment : 0,
+              credit.yearsOfPayment * credit.period,
+              credit.period,
+              paymentData.period
+            )
+
+            return {
+              ...paymentData,
+              amortization: amortization.toFixed(2),
+              interest: interest.toFixed(2)
+            }
+          }));
         } else {
           setPayments([]);
         }
@@ -203,8 +239,14 @@ const Cobros: FC = () => {
   }
 
   const handleViewPayments = (id: string) => {
-    setSelectedCredit(id);
-    pagosTabRef.current?.click();
+    setLoadingRequest(true);
+    GetCredit(parseInt(id)).then((res) => {
+      setLoadingRequest(false);
+      setSelectedCredit(id);
+
+      setSelectedCreditData(res.data);
+      pagosTabRef.current?.click();
+    })
   }
 
   const handleDoPayment = (id: string) => {
@@ -228,10 +270,17 @@ const Cobros: FC = () => {
               background: "#fff",
               color: "#000",
               align: "left",
-              tooltip: fila[`${columna}`].toString(),
+              tooltip: fila[`${columna}`]?.toString(),
             })
-            if (columna === "date") {
-              const dateFormatted = formatUtcToLocal(fila["date"], import.meta.env.VITE_LOCALE,
+            if (columna === "paymentDate") {
+              const dateFormatted = formatUtcToLocal(fila["paymentDate"], import.meta.env.VITE_LOCALE,
+                import.meta.env.VITE_TIMEZONE
+              )
+              tempCol.content.Label = dateFormatted;
+              tempCol.tooltip = dateFormatted;
+            }
+            if (columna === "timelyPayment") {
+              const dateFormatted = formatUtcToLocal(fila["timelyPayment"], import.meta.env.VITE_LOCALE,
                 import.meta.env.VITE_TIMEZONE
               )
               tempCol.content.Label = dateFormatted;

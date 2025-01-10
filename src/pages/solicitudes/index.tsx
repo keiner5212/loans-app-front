@@ -1011,7 +1011,7 @@ const Solicitudes: FC = () => {
                 color: theme === "dark" ? "#fff" : "#000",
               }
             ] : [],
-            ...(fila["status"] === Status.RELEASED) ? [
+            ...(fila["status"] === Status.RELEASED || fila["status"] === Status.FINISHED || fila["status"] === Status.LATE) ? [
               {
                 label: "Generar tabla de amortizaciones",
                 icon: <FaTable size={30} />,

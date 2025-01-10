@@ -1,7 +1,7 @@
 import { FunctionComponent, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Layout } from "@/components/Layout";
-import "@/solicitudes/CreditDetails/details.css";
+import "@/pages/solicitudes/CreditDetails/details.css";
 import { LoaderScreen } from "@/components/Loader/LoaderScreen";
 import { getUserById } from "@/api/user/userData";
 import { Usuario } from "..";
@@ -99,7 +99,7 @@ const UserDetails: FunctionComponent<UserDetailsProps> = () => {
     const renderField = (label: string, value: any) => (
         <div className={"details-field" + " " + theme}>
             <span className="field-label">{label}:</span>
-            <span className="field-value">{value !== null ? value : "No data"}</span>
+            <span className="field-value">{value ? value : "No data"}</span>
         </div>
     );
 

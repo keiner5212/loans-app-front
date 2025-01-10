@@ -157,8 +157,15 @@ const Solicitudes: FC = () => {
     debounce(() => {
       setLoadingTable(true);
       GetCredits().then((res) => {
-        setSolicitudes(res.data)
-        setSolicitudesBack(res.data)
+        const solicitudesRes = res.data.map((creditres: any) => {
+
+          return {
+            ...creditres,
+            remainingDebt: creditres.status == Status.CANCELED ? 0 : creditres.requestedAmount - creditres.approvedAmount
+          }
+        });
+        setSolicitudes(solicitudesRes)
+        setSolicitudesBack(solicitudesRes)
         setLoadingTable(false);
       })
     }, 300), // 300 ms de espera antes de ejecutar la función (evitar spamming de peticiones)
@@ -1024,7 +1031,7 @@ const Solicitudes: FC = () => {
               background: "#fff",
               color: "#000",
               align: "left",
-              tooltip: fila[`${columna}`].toString(),
+              tooltip: fila[`${columna}`]?.toString(),
             })
             if (columna === "applicationDate") {
               const dateFormatted = formatUtcToLocal(fila["applicationDate"], import.meta.env.VITE_LOCALE,

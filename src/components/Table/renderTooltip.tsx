@@ -5,7 +5,7 @@ export const renderTooltip = (
   showTooltip: boolean,
   rect: DOMRect | null
 ) => {
-  if (!tooltip || !tooltip.trim()) return null;
+  if (!tooltip || !tooltip.toString().trim()) return null;
   if (!showTooltip || !rect) return null;
 
   const tooltipStyle: React.CSSProperties = {

@@ -19,6 +19,11 @@ import { Loader } from "@/components/Loader";
 import { GetPaymentsOfCredit } from "@/api/payments/GetPayments";
 import { Status } from "@/constants/credits/Credit";
 import { obtenerDetallePeriodo } from "@/utils/amortizacion/Credit";
+import { PaymentStatus } from "./Pagos";
+import { PaymentFilterPortal } from "./PaymentFilterPortal";
+import { FiRefreshCw } from "react-icons/fi";
+import { UpdatePaymentsOfCredit } from "@/api/payments/UpdatePayment";
+import { useNavigationContext } from "@/contexts/NavigationContext";
 
 // TODO: eliminar la opcion de pagar credito desde la tabla de creditos, que se pague directamente en la tabla de pagos
 
@@ -69,6 +74,7 @@ const Cobros: FC = () => {
   const defaultTabRef = useRef<HTMLButtonElement>(null)
   const pagosTabRef = useRef<HTMLButtonElement>(null)
   const [search, setSearch] = useState("");
+  const [paymentsSearch, setPaymentsSearch] = useState("");
   const [user, setUser] = useState<any>();
   const [resultCredits, setResultCredits] = useState<any[]>([]);
   const [rows, setRows] = useState<TableRowType[]>([]);
@@ -85,10 +91,29 @@ const Cobros: FC = () => {
     button2Text: "",
     closeOnOutsideClick: false,
   });
+  const { lastPage, setLastPage } = useNavigationContext();
+  const [showFilterBox, setShowFilterBox] = useState(false);
+  const [selectedFilter, setSelectedFilter] = useState<PaymentStatus | null>(null);
+  const toggleFilterBox = () => {
+    setShowFilterBox(!showFilterBox);
+  };
 
+  const [paymentsBackup, setPaymentsBackup] = useState([]);
   const [payments, setPayments] = useState([]);
 
+  const [reloadFlag, setReloadFlag] = useState(false);
+
   const [selectedCreditData, setSelectedCreditData] = useState<any>({});
+
+  useEffect(() => {
+    if (lastPage) {
+      if (lastPage.startsWith("/cobros")) {
+        ReloadPayments(lastPage.split("/cobros/")[1]);
+        setLastPage(null);
+      }
+    }
+
+  }, [lastPage]);
 
   useEffect(() => {
     setLoadingRequest(true);
@@ -99,7 +124,7 @@ const Cobros: FC = () => {
       GetPaymentsOfCredit(selectedCredit).then((res) => {
         setLoadingRequest(false);
         if (res.data && res.data.length > 0) {
-          setPayments(res.data.map((paymentData: any) => {
+          const mappedPayments = res.data.map((paymentData: any) => {
             const {
               amortization,
               interest
@@ -117,7 +142,9 @@ const Cobros: FC = () => {
               amortization: amortization.toFixed(2),
               interest: interest.toFixed(2)
             }
-          }));
+          })
+          setPayments(mappedPayments);
+          setPaymentsBackup(mappedPayments);
         } else {
           setPayments([]);
         }
@@ -126,7 +153,28 @@ const Cobros: FC = () => {
       setPayments([]);
       setLoadingRequest(false);
     }
-  }, [selectedCredit])
+  }, [selectedCredit, reloadFlag])
+
+  useEffect(() => {
+    if (selectedFilter || paymentsSearch) {
+      let filteredPayments = paymentsBackup;
+      if (selectedFilter) {
+        filteredPayments = paymentsBackup.filter((payment: any) => payment.status === selectedFilter);
+      }
+      // filter search
+      if (paymentsSearch !== "") {
+        filteredPayments = filteredPayments.filter((payment: any) => {
+          console.log(JSON.stringify(payment).toLowerCase());
+          console.log(paymentsSearch.toLowerCase());
+          return JSON.stringify(payment).toLowerCase().includes(paymentsSearch.toLowerCase())
+        }
+        );
+      } else { }
+      setPayments(filteredPayments);
+    } else {
+      setPayments(paymentsBackup);
+    }
+  }, [selectedFilter, paymentsSearch]);
 
 
   useEffect(() => {
@@ -231,7 +279,6 @@ const Cobros: FC = () => {
     tooltip: columna,
   }))
 
-
   const navigate = useNavigate();
 
   const handleMoreInfo = (id: string) => {
@@ -273,11 +320,25 @@ const Cobros: FC = () => {
               tooltip: fila[`${columna}`]?.toString(),
             })
             if (columna === "paymentDate") {
-              const dateFormatted = formatUtcToLocal(fila["paymentDate"], import.meta.env.VITE_LOCALE,
+              let dateFormatted = formatUtcToLocal(fila["paymentDate"], import.meta.env.VITE_LOCALE,
                 import.meta.env.VITE_TIMEZONE
               )
+              if (!dateFormatted) {
+                dateFormatted = "Sin fecha"
+              }
               tempCol.content.Label = dateFormatted;
               tempCol.tooltip = dateFormatted;
+            }
+            if (columna === "status") {
+              tempCol.tooltip = fila["status"] == PaymentStatus.PENDING ? "No ha pagado" : fila["status"];
+            }
+            if (columna === "userCreatorId") {
+              let text = fila["userCreatorId"];
+              if (!text) {
+                text = "No definido"
+              }
+              tempCol.content.Label = text;
+              tempCol.tooltip = text;
             }
             if (columna === "timelyPayment") {
               const dateFormatted = formatUtcToLocal(fila["timelyPayment"], import.meta.env.VITE_LOCALE,
@@ -288,6 +349,17 @@ const Cobros: FC = () => {
             }
             return tempCol
           }) as TableContentIndvidual[],
+          actions: [
+            ...(fila["status"] == PaymentStatus.PENDING || fila["status"] == PaymentStatus.LATE) ?
+              [{
+                label: "Realizar cobro",
+                icon: <FaDollarSign />,
+                onClick: () => handleDoPayment(fila["id"]),
+                background: "#3f649ef4",
+                color: theme === "dark" ? "#fff" : "#000",
+              }
+              ] : [],
+          ],
           hoverEffect: true,
           hoverType: "row",
           id: fila["id"].toString(),
@@ -335,21 +407,14 @@ const Cobros: FC = () => {
               background: "#3f649ef4",
               color: theme === "dark" ? "#fff" : "#000",
             },
-            {
-              label: "Ver pagos",
-              icon: <FaList />,
-              onClick: () => handleViewPayments(fila["id"]),
-              background: "#3f649ef4",
-              color: theme === "dark" ? "#fff" : "#000",
-            },
-            ...(fila["status"] === Status.RELEASED || fila["status"] === Status.LATE ? [
+            ...((fila["status"] === Status.RELEASED || fila["status"] === Status.LATE) ? [
               {
-                label: "Realizar cobro",
-                icon: <FaDollarSign />,
-                onClick: () => handleDoPayment(fila["id"]),
+                label: "Ver pagos",
+                icon: <FaList />,
+                onClick: () => handleViewPayments(fila["id"]),
                 background: "#3f649ef4",
                 color: theme === "dark" ? "#fff" : "#000",
-              }
+              },
             ] : [])
           ],
           id: fila["id"].toString(),
@@ -358,6 +423,28 @@ const Cobros: FC = () => {
       })
     )
   }, [resultCredits]);
+
+  function handleReloadPayments() {
+    ReloadPayments(selectedCredit);
+  }
+
+  function ReloadPayments(creditId: string | undefined) {
+    setLoadingRequest(true);
+    if (creditId) {
+      UpdatePaymentsOfCredit(creditId).then(() => {
+        setLoadingRequest(false);
+        setReloadFlag(!reloadFlag);
+      });
+    } else {
+      setLoadingRequest(false);
+      setReloadFlag(!reloadFlag);
+    }
+  }
+
+  const handleFilterChange = (e: any) => {
+    const { value } = e.target;
+    setSelectedFilter(value);
+  };
 
   return (
     <Layout>
@@ -436,8 +523,30 @@ const Cobros: FC = () => {
       <div id="admin_pagos" className="tabcontent">
         <h3>Administrar Pagos</h3>
         {selectedCredit ?
-          <>{payments.length > 0 ?
+          <>{paymentsBackup.length > 0 ?
             <>
+              <div className="filter-search-container">
+                <input
+                  type="text"
+                  placeholder="Buscar pago..."
+                  className="search-input"
+                  value={paymentsSearch}
+                  onChange={(e) => setPaymentsSearch(e.target.value)}
+                />
+                <button className="filter-button" onClick={toggleFilterBox}>
+                  Filtros
+                </button>
+                <button onClick={handleReloadPayments}>
+                  <FiRefreshCw />
+                </button>
+              </div>
+              <PaymentFilterPortal
+                clearFilter={() => setSelectedFilter(null)}
+                show={showFilterBox}
+                onClose={toggleFilterBox}
+                selectedFilter={selectedFilter}
+                onFilterChange={handleFilterChange}
+              />
               <TableContextProvider>
                 <TableContainer
                   headers={pagosHeaders}

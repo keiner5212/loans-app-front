@@ -13,6 +13,8 @@ import { saveAs } from "file-saver";
 import ReciboPago from "../../pdf/ReciboPago";
 import { CreatePayment } from "@/api/payments/CreatePayment";
 import { useAppStore } from "@/store/appStore";
+import { useNavigationContext } from "@/contexts/NavigationContext";
+import { GetPayment } from "@/api/payments/GetPayments";
 
 export enum PaymentStatus {
     PENDING = "PENDING",
@@ -30,7 +32,10 @@ const Pago: FunctionComponent<PagoProps> = () => {
     const [credit, setCredit] = useState<Credit | null>(null);
     const [loadingRequest, setLoadingRequest] = useState(false);
     const [financing, setFinancing] = useState<any | null>(null);
+    const [payment, setPayment] = useState<number | null | undefined>(null);
     const navigate = useNavigate();
+    const { setLastPage } = useNavigationContext();
+
     // what it has to payed
     const [periodPayment, setPeriodPayment] = useState<any | null>(null);
     const [modalData, setModalData] = useState({
@@ -58,12 +63,19 @@ const Pago: FunctionComponent<PagoProps> = () => {
     useEffect(() => {
         setLoadingRequest(true);
         if (id) {
-            GetCredit(Number(id))
+            GetPayment(Number(id))
                 .then((response) => {
-                    setCredit(response.data.credit);
-                    if (response.data.financing) {
-                        setFinancing(response.data.financing);
-                    }
+                    setPayment(Number(id));
+                    GetCredit(response.data.creditId).then((res) => {
+                        setCredit(res.data.credit);
+                        setLastPage("/cobros/" + res.data.credit.id);
+                        if (res.data.financing) {
+                            setFinancing(res.data.financing);
+                        }
+                    })
+                        .catch((error) => {
+                            console.error("Error fetching credit:", error);
+                        })
                 })
                 .catch((error) => {
                     console.error("Error fetching credit:", error);
@@ -109,15 +121,48 @@ const Pago: FunctionComponent<PagoProps> = () => {
     const handlePayment = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoadingRequest(true);
-        if (!credit || !periodPayment) return;
+        if (!credit || !periodPayment) {
+            setModalData({
+                isOpen: true,
+                title: "Error",
+                message: "Hubo un problema al generar el recibo de pago.",
+                button1Text: "Cerrar",
+                hasTwoButtons: false,
+                button2Text: "",
+                closeOnOutsideClick: false,
+            });
+            return
+        };
+        if (!payment) {
+            setModalData({
+                isOpen: true,
+                title: "Error",
+                message: "Hubo un problema al generar el recibo de pago.",
+                button1Text: "Cerrar",
+                hasTwoButtons: false,
+                button2Text: "",
+                closeOnOutsideClick: false,
+            });
+            return
+        }
 
-        const res = await CreatePayment({
-            creditId: credit.id,
-            userCreatorId: userInfo.id,
-            amount: periodPayment,
-            period: credit.lastPaymentPeriod ? credit.lastPaymentPeriod + 1 : 1,
-            date: new Date().toISOString(),
-        })
+        if (!userInfo?.id) {
+            setModalData({
+                isOpen: true,
+                title: "Error",
+                message: "Hubo un problema al generar el recibo de pago.",
+                button1Text: "Cerrar",
+                hasTwoButtons: false,
+                button2Text: "",
+                closeOnOutsideClick: false,
+            })
+            return
+        }
+
+        const res = await CreatePayment(
+            payment,
+            userInfo.id
+        )
 
         if (!res) {
             setModalData({

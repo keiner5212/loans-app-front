@@ -6,6 +6,7 @@ import { useAppStore } from "./store/appStore";
 import { configureAxios } from "./api/axiosInstance";
 import { PrivateRoute } from "./components/PrivateRoute";
 import { getSelfUserInfo } from "./api/user/userData";
+import Contexts from "./Contexts";
 
 const Home = lazy<ComponentType>(() => import("./pages/home/index"));
 const Login = lazy<ComponentType>(() => import("./pages/Auth/Login"));
@@ -71,26 +72,27 @@ function App() {
 
   return (
     <BrowserRouter>
-      <Suspense fallback={<LoaderScreen />}>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route element={<PrivateRoute />}>
-            <Route path="/" element={<Home />} />
-            <Route path="/solicitudes" element={<Solicitudes />} />
-            <Route path="/solicitudes/:id" element={<CreditDetails />} />
-            <Route path="/solicitudes/:id/desembolse" element={<DesembolseProps />} />
-            <Route path="/solicitudes/pagos/:id" element={<Pago />} />
-            <Route path="/cobros" element={<Cobros />} />
-            <Route path="/alertas" element={<Alertas />} />
-            <Route path="/reportes" element={<Reportes />} />
-            <Route path="/configuracion" element={<Configuracion />} />
-            <Route path="/administrar-usuarios" element={<AdministrarUsuarios />} />
-            <Route path="/usuarios/:id" element={<UserDetails />} />
-          </Route>
-          <Route path="*" element={<Home />} />
-        </Routes>
-      </Suspense>
+      <Contexts>
+        <Suspense fallback={<LoaderScreen />}>
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route element={<PrivateRoute />}>
+              <Route path="/" element={<Home />} />
+              <Route path="/solicitudes" element={<Solicitudes />} />
+              <Route path="/solicitudes/:id" element={<CreditDetails />} />
+              <Route path="/solicitudes/:id/desembolse" element={<DesembolseProps />} />
+              <Route path="/solicitudes/pagos/:id" element={<Pago />} />
+              <Route path="/cobros" element={<Cobros />} />
+              <Route path="/alertas" element={<Alertas />} />
+              <Route path="/reportes" element={<Reportes />} />
+              <Route path="/configuracion" element={<Configuracion />} />
+              <Route path="/administrar-usuarios" element={<AdministrarUsuarios />} />
+              <Route path="/usuarios/:id" element={<UserDetails />} />
+            </Route>
+            <Route path="*" element={<Home />} />
+          </Routes>
+        </Suspense></Contexts>
     </BrowserRouter>
   );
 }

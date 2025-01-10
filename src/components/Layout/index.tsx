@@ -40,7 +40,7 @@ export const Layout: FC<Props> = ({ children, loading = false }) => {
       allowed: Roles.USER_ADMIN,
     },
     {
-      title: "Reportes",
+      title: "Exportar Reportes",
       url: "/reportes",
       allowed: Roles.USER_ADMIN,
     },

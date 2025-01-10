@@ -27,6 +27,9 @@ export interface Credit {
     lastPaymentDate: string | null;
     lastPaymentPeriod: number | null;
     signedContract: string | null;
+    approvedAmount: number | null;
+    lateInterest: number | null;
+    finishedMessage: string | null;
 }
 
 const CreditDetails: FunctionComponent = () => {
@@ -123,6 +126,10 @@ const CreditDetails: FunctionComponent = () => {
                         {renderField("Fecha de Finalización",
                             formatUtcToLocal(credit.finishedDate, import.meta.env.VITE_LOCALE, import.meta.env.VITE_TIMEZONE)
                         )}
+                        {renderField("Cantidad Aprobada", `$${credit.approvedAmount}`)}
+                        {renderField("Interés por Mora", `$${credit.lateInterest}`)}
+                        {renderField("Mensaje de Finalización", credit.finishedMessage || "No hay mensaje de finalización")}
+
                         {renderField("Ultimo Periodo Pagado", credit.lastPaymentPeriod)}
                         {renderField("Fecha de Ultimo Pago",
                             formatUtcToLocal(credit.lastPaymentDate, import.meta.env.VITE_LOCALE, import.meta.env.VITE_TIMEZONE)

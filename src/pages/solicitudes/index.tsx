@@ -2,7 +2,7 @@ import { FC, useCallback, useEffect, useRef, useState } from "react";
 import { Layout } from "@/components/Layout";
 import "@/components/tabs/tabs.css";
 import "./solicitudes.css";
-import { FaCheck, FaEye, FaMoneyBill, FaTable, FaTimes } from "react-icons/fa";
+import { FaCheck, FaEye, FaMoneyBill, FaTable, FaTimes, FaTrash } from "react-icons/fa";
 import { openContent } from "@/components/tabs";
 import { useAppStore } from "@/store/appStore";
 import { TableContextProvider } from "@/components/Table/TableService";
@@ -23,7 +23,7 @@ import { CreditType, Status } from "@/constants/credits/Credit";
 import { FilterPortal } from "./FilterPortal";
 import { GetCredit, GetCredits } from "@/api/credit/GetCredits";
 import { formatUtcToLocal } from "@/utils/formats/Dates";
-import { AproveCredit, DeclineCredit } from "@/api/credit/ChangeStatus";
+import { AproveCredit, CancelCredit, DeclineCredit } from "@/api/credit/ChangeStatus";
 import { useNavigate } from "react-router-dom";
 import { debounce } from "lodash";
 import { FiRefreshCw } from "react-icons/fi";
@@ -33,11 +33,13 @@ import { AmortizationRow, calcularPago, calcularTabla } from "@/utils/amortizaci
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 import CustomCheckbox from "@/components/check";
+import TextModal from "@/components/modal/TextModal";
 
 const rowkeys = [
   "id",
   "userId",
   "approvedAmount",
+  "lateInterest",
   "remainingDebt",
   "creditType",
   "userCreatorId",
@@ -54,6 +56,7 @@ const columnas = [
   "ID",
   "ID de usuario",
   "Monto Aprovado",
+  "Interés de retraso",
   "Deuda Restante",
   "Tipo de credito",
   "ID del creador",
@@ -109,6 +112,18 @@ const Solicitudes: FC = () => {
     closeOnOutsideClick: false,
   });
 
+  const [textModalData, setTextModalData] = useState({
+    isOpen: false,
+    title: "",
+    message: "",
+    isTextArea: false,
+    placeholder: "",
+    button1Text: "",
+    button1Action: (_text: string) => { },
+    button2Text: "",
+    button2Action: () => { },
+  })
+
   const defaultTabRef = useRef<HTMLButtonElement>(null);
   const { theme, userInfo } = useAppStore();
   const [interestRate, setInterestRate] = useState(0);
@@ -129,7 +144,7 @@ const Solicitudes: FC = () => {
 
         return {
           ...creditres,
-          remainingDebt: creditres.requestedAmount - creditres.approvedAmount
+          remainingDebt: creditres.status == Status.CANCELED ? 0 : creditres.requestedAmount - creditres.approvedAmount
         }
       });
       setSolicitudes(solicitudesRes)
@@ -899,6 +914,40 @@ const Solicitudes: FC = () => {
     }
   }
 
+  function restartTextModal() {
+    setTextModalData({
+      isOpen: false,
+      title: "",
+      message: "",
+      isTextArea: false,
+      placeholder: "",
+      button1Text: "",
+      button1Action: (_text: string) => { },
+      button2Text: "",
+      button2Action: () => { },
+    });
+  }
+
+  const [modalText, setModalText] = useState("");
+
+  function handleAnular(id: number): void {
+    setTextModalData({
+      isOpen: true,
+      title: "Anular solicitud",
+      message: "¿Estás seguro de anular la solicitud?",
+      isTextArea: true,
+      placeholder: "Anular solicitud",
+      button1Text: "Si",
+      button2Text: "No",
+      button1Action: (text: string) => {
+        CancelCredit(id, text).then(() => {
+          restartTextModal();
+        })
+      },
+      button2Action: restartTextModal,
+    })
+  }
+
   const handleApprove = (id: number) => {
     setLoadingRequest(true);
     AproveCredit(id).then(() => {
@@ -1031,6 +1080,15 @@ const Solicitudes: FC = () => {
                 color: theme === "dark" ? "#fff" : "#000",
               }
             ] : [],
+            ...(fila["status"] === Status.RELEASED || fila["status"] === Status.LATE) ? [
+              {
+                label: "Anular solicitud",
+                icon: <FaTrash />,
+                onClick: () => handleAnular(fila["id"]),
+                background: "#ff5c64",
+                color: theme === "dark" ? "#fff" : "#000",
+              }
+            ] : [],
           ],
           id: fila["id"].toString(),
         }
@@ -1055,6 +1113,24 @@ const Solicitudes: FC = () => {
         closeOnOutsideClick={true}
         onClose={closeModal}
       />
+      <TextModal
+        isOpen={textModalData.isOpen}
+        title={textModalData.title}
+        message={textModalData.message}
+        isTextArea={textModalData.isTextArea}
+        placeholder={textModalData.placeholder}
+        value={modalText}
+        onChange={(e) => {
+          setModalText(e.target.value);
+        }}
+        button1Text={textModalData.button1Text}
+        button1Action={textModalData.button1Action}
+        button2Text={textModalData.button2Text}
+        button2Action={textModalData.button2Action}
+        closeOnOutsideClick={false}
+        onClose={restartTextModal}
+      />
+
       <LoaderModal isOpen={loadingRequest} />
       <div className="tab">
         <button

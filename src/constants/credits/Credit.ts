@@ -12,6 +12,8 @@ export enum Status {
     LATE = "LATE",
     //terminado
     FINISHED = "FINISHED",
+    //cancelado
+    CANCELED = "CANCELED",
 }
 
 export enum CreditType {

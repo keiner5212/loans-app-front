@@ -211,7 +211,7 @@ const Cobros: FC = () => {
           setResultCredits(res.data.map((credit: any) => {
             return {
               ...credit,
-              remainingDebt: credit.requestedAmount - credit.approvedAmount
+              remainingDebt: credit.status == Status.CANCELED ? 0 : credit.requestedAmount - credit.approvedAmount
             }
           }));
         } else {

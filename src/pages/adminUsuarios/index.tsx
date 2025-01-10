@@ -7,7 +7,7 @@ import { Roles } from "@/constants/permisions/Roles";
 import { getUsers, searchUser } from "@/api/user/userData";
 import { TableContentIndvidual, TableHeaderType, TableRowType } from "@/components/Table/TableTypes";
 import { useAppStore } from "@/store/appStore";
-import { formatUtcToLocal } from "@/utils/formats/formatToLocal";
+import { formatUtcToLocal } from "@/utils/formats/Dates";
 import { FaEye, FaTrash } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { TableContextProvider } from "@/components/Table/TableService";

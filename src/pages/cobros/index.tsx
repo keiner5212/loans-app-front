@@ -10,7 +10,7 @@ import LoaderModal from "@/components/modal/Loader/LoaderModal";
 import { GetCredit, GetCreditsByUser } from "@/api/credit/GetCredits";
 import { TableContentIndvidual, TableHeaderType, TableRowType } from "@/components/Table/TableTypes";
 import { useAppStore } from "@/store/appStore";
-import { formatUtcToLocal } from "@/utils/formats/formatToLocal";
+import { calculateDaysDelay, formatUtcToLocal } from "@/utils/formats/Dates";
 import { FaDollarSign, FaEye, FaList } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { TableContextProvider } from "@/components/Table/TableService";
@@ -24,12 +24,17 @@ import { PaymentFilterPortal } from "./PaymentFilterPortal";
 import { FiRefreshCw } from "react-icons/fi";
 import { UpdatePaymentsOfCredit } from "@/api/payments/UpdatePayment";
 import { useNavigationContext } from "@/contexts/NavigationContext";
+import { getConfig } from "@/api/config/GetConfig";
+import { Config } from "@/constants/config/Config";
 
 // TODO: eliminar la opcion de pagar credito desde la tabla de creditos, que se pague directamente en la tabla de pagos
 
 const rowkeys = [
   "id",
   "userId",
+  "approvedAmount",
+  "remainingDebt",
+  "lateInterest",
   "creditType",
   "requestedAmount",
   "status",
@@ -40,6 +45,9 @@ const rowkeys = [
 const columnas = [
   "ID",
   "ID de usuario",
+  "Monto Aprovado",
+  "Deuda Restante",
+  "Interés de retraso",
   "Tipo de credito",
   "Monto solicitado",
   "Estado",
@@ -55,6 +63,8 @@ const pagosColumnas = [
   "Estado",
   "Fecha de pago",
   "Fecha de pago oportuno",
+  "Dias de retraso",
+  "Interés de retraso",
   "Periodo"
 ]
 
@@ -67,6 +77,8 @@ const pagosRowKeys = [
   "status",
   "paymentDate",
   "timelyPayment",
+  "lateDays",
+  "lateInterest",
   "period"
 ]
 
@@ -121,9 +133,9 @@ const Cobros: FC = () => {
       const credit = selectedCreditData.credit;
       const financing = selectedCreditData.financing;
 
-      GetPaymentsOfCredit(selectedCredit).then((res) => {
-        setLoadingRequest(false);
+      GetPaymentsOfCredit(selectedCredit).then(async (res) => {
         if (res.data && res.data.length > 0) {
+          const dailyInerestDelay = await getConfig(Config.DAILY_INTEREST_DELAY);
           const mappedPayments = res.data.map((paymentData: any) => {
             const {
               amortization,
@@ -136,17 +148,24 @@ const Cobros: FC = () => {
               credit.period,
               paymentData.period
             )
+            const lateDays = paymentData.status == PaymentStatus.LATE ? calculateDaysDelay(new Date(paymentData.timelyPayment), new Date()) :
+              paymentData.status == PaymentStatus.LATE_RELEASED ? calculateDaysDelay(new Date(paymentData.timelyPayment), new Date(paymentData.paymentDate)) : 0
+            const lateAmount = (lateDays * (parseFloat(dailyInerestDelay?.data.value || "0") * paymentData.amount)).toFixed(2)
 
             return {
               ...paymentData,
               amortization: amortization.toFixed(2),
-              interest: interest.toFixed(2)
+              interest: interest.toFixed(2),
+              lateDays: lateDays,
+              lateInterest: lateAmount
             }
           })
           setPayments(mappedPayments);
           setPaymentsBackup(mappedPayments);
+          setLoadingRequest(false);
         } else {
           setPayments([]);
+          setLoadingRequest(false);
         }
       })
     } else {
@@ -189,7 +208,12 @@ const Cobros: FC = () => {
       GetCreditsByUser(user.id).then((res) => {
         setLoadingRequest(false);
         if (res.data && res.data.length > 0) {
-          setResultCredits(res.data);
+          setResultCredits(res.data.map((credit: any) => {
+            return {
+              ...credit,
+              remainingDebt: credit.requestedAmount - credit.approvedAmount
+            }
+          }));
         } else {
           setResultCredits([]);
           setModalData({
@@ -386,7 +410,7 @@ const Cobros: FC = () => {
               background: "#fff",
               color: "#000",
               align: "left",
-              tooltip: fila[`${columna}`].toString(),
+              tooltip: fila[`${columna}`] ? fila[`${columna}`].toString() : "",
             })
             if (columna === "applicationDate") {
               const dateFormatted = formatUtcToLocal(fila["applicationDate"], import.meta.env.VITE_LOCALE,
@@ -522,37 +546,37 @@ const Cobros: FC = () => {
       {/* Segunda Tab - Administrar Pagos */}
       <div id="admin_pagos" className="tabcontent">
         <h3>Administrar Pagos</h3>
+        <div className="filter-search-container">
+          <input
+            type="text"
+            placeholder="Buscar pago..."
+            className="search-input"
+            value={paymentsSearch}
+            onChange={(e) => setPaymentsSearch(e.target.value)}
+          />
+          <button className="filter-button" onClick={toggleFilterBox}>
+            Filtros
+          </button>
+          <button onClick={handleReloadPayments} title="Recargar Pagos / Generar Nuevo pago">
+            <FiRefreshCw />
+          </button>
+        </div>
+        <PaymentFilterPortal
+          clearFilter={() => setSelectedFilter(null)}
+          show={showFilterBox}
+          onClose={toggleFilterBox}
+          selectedFilter={selectedFilter}
+          onFilterChange={handleFilterChange}
+        />
         {selectedCredit ?
           <>{paymentsBackup.length > 0 ?
             <>
-              <div className="filter-search-container">
-                <input
-                  type="text"
-                  placeholder="Buscar pago..."
-                  className="search-input"
-                  value={paymentsSearch}
-                  onChange={(e) => setPaymentsSearch(e.target.value)}
-                />
-                <button className="filter-button" onClick={toggleFilterBox}>
-                  Filtros
-                </button>
-                <button onClick={handleReloadPayments}>
-                  <FiRefreshCw />
-                </button>
-              </div>
-              <PaymentFilterPortal
-                clearFilter={() => setSelectedFilter(null)}
-                show={showFilterBox}
-                onClose={toggleFilterBox}
-                selectedFilter={selectedFilter}
-                onFilterChange={handleFilterChange}
-              />
               <TableContextProvider>
                 <TableContainer
                   headers={pagosHeaders}
                   rows={pagosrows}
                   isSticky={true}
-                  maxHeight="60vh"
+                  maxHeight="50vh"
                   indexed={false}
                   loading={false}
                   loader={

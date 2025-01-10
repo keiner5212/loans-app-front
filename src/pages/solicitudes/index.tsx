@@ -22,7 +22,7 @@ import { CreateCredit, CreateFinancing } from "@/api/credit/CreateCredit";
 import { CreditType, Status } from "@/constants/credits/Credit";
 import { FilterPortal } from "./FilterPortal";
 import { GetCredit, GetCredits } from "@/api/credit/GetCredits";
-import { formatUtcToLocal } from "@/utils/formats/formatToLocal";
+import { formatUtcToLocal } from "@/utils/formats/Dates";
 import { AproveCredit, DeclineCredit } from "@/api/credit/ChangeStatus";
 import { useNavigate } from "react-router-dom";
 import { debounce } from "lodash";
@@ -37,6 +37,8 @@ import CustomCheckbox from "@/components/check";
 const rowkeys = [
   "id",
   "userId",
+  "approvedAmount",
+  "remainingDebt",
   "creditType",
   "userCreatorId",
   "requestedAmount",
@@ -51,6 +53,8 @@ const rowkeys = [
 const columnas = [
   "ID",
   "ID de usuario",
+  "Monto Aprovado",
+  "Deuda Restante",
   "Tipo de credito",
   "ID del creador",
   "Monto solicitado",
@@ -121,8 +125,15 @@ const Solicitudes: FC = () => {
     getConfig(Config.MAX_CREDIT_AMOUNT).then((res) => setMaxCreditAmountRes(parseFloat(res?.data.value)));
     getConfig(Config.MIN_CREDIT_AMOUNT).then((res) => setMinCreditAmountRes(parseFloat(res?.data.value)));
     GetCredits().then((res) => {
-      setSolicitudes(res.data)
-      setSolicitudesBack(res.data)
+      const solicitudesRes = res.data.map((creditres: any) => {
+
+        return {
+          ...creditres,
+          remainingDebt: creditres.requestedAmount - creditres.approvedAmount
+        }
+      });
+      setSolicitudes(solicitudesRes)
+      setSolicitudesBack(solicitudesRes)
     });
   }, []);
 

@@ -21,4 +21,6 @@ export enum Config {
     COMPANY_PHONE = "COMPANY_PHONE",
     //correo
     COMPANY_EMAIL = "COMPANY_EMAIL",
+    //interés por atraso en dias
+    DAILY_INTEREST_DELAY = "DAILY_INTEREST_DELAY",
 }

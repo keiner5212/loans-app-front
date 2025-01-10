@@ -7,7 +7,7 @@ import { LoaderScreen } from "@/components/Loader/LoaderScreen";
 import { useAppStore } from "@/store/appStore";
 import { CreditType } from "@/constants/credits/Credit";
 import { getFile } from "@/api/files/GetFiles";
-import { formatUtcToLocal } from "@/utils/formats/formatToLocal";
+import { formatUtcToLocal } from "@/utils/formats/Dates";
 
 export interface Credit {
     id: number;

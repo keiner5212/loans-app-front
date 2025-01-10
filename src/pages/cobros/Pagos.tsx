@@ -5,7 +5,6 @@ import SimpleModal from "@/components/modal/simpleModal/ModalSimple";
 import LoaderModal from "@/components/modal/Loader/LoaderModal";
 import { Credit } from "../solicitudes/CreditDetails/Credit";
 import { GetCredit } from "@/api/credit/GetCredits";
-import { calcularPago } from "@/utils/amortizacion/Credit";
 import "../solicitudes/solicitudes.css";
 import "./cobros.css"
 import { pdf } from "@react-pdf/renderer";
@@ -15,6 +14,9 @@ import { CreatePayment } from "@/api/payments/CreatePayment";
 import { useAppStore } from "@/store/appStore";
 import { useNavigationContext } from "@/contexts/NavigationContext";
 import { GetPayment } from "@/api/payments/GetPayments";
+import { calculateDaysDelay } from "@/utils/formats/Dates";
+import { getConfig } from "@/api/config/GetConfig";
+import { Config } from "@/constants/config/Config";
 
 export enum PaymentStatus {
     PENDING = "PENDING",
@@ -32,7 +34,9 @@ const Pago: FunctionComponent<PagoProps> = () => {
     const [credit, setCredit] = useState<Credit | null>(null);
     const [loadingRequest, setLoadingRequest] = useState(false);
     const [financing, setFinancing] = useState<any | null>(null);
-    const [payment, setPayment] = useState<number | null | undefined>(null);
+    const [lateAmount, setLateAmount] = useState(0);
+    const [paymentId, setPaymentID] = useState<number | null | undefined>(null);
+    const [payment, setPayment] = useState<any | null | undefined>(null);
     const navigate = useNavigate();
     const { setLastPage } = useNavigationContext();
 
@@ -64,8 +68,14 @@ const Pago: FunctionComponent<PagoProps> = () => {
         setLoadingRequest(true);
         if (id) {
             GetPayment(Number(id))
-                .then((response) => {
-                    setPayment(Number(id));
+                .then(async (response) => {
+                    setPaymentID(Number(id));
+                    setPayment(response.data);
+                    const dailyInerestDelay = await getConfig(Config.DAILY_INTEREST_DELAY);
+                    const lateDays = response.data.status == PaymentStatus.LATE ? calculateDaysDelay(new Date(response.data.timelyPayment), new Date()) : 0
+                    const lateAmountCalculated = (lateDays * (parseFloat(dailyInerestDelay?.data.value || "0") * response.data.amount)).toFixed(2)
+                    setLateAmount(parseFloat(lateAmountCalculated));
+                    setPeriodPayment(response.data.amount);
                     GetCredit(response.data.creditId).then((res) => {
                         setCredit(res.data.credit);
                         setLastPage("/cobros/" + res.data.credit.id);
@@ -101,14 +111,6 @@ const Pago: FunctionComponent<PagoProps> = () => {
                 navigate(-1);
                 return
             }
-
-            let downPayment = 0;
-            if (financing) {
-                downPayment = financing.downPayment;
-            }
-            setPeriodPayment(calcularPago(credit.interestRate / 100, credit.requestedAmount, downPayment,
-                credit.yearsOfPayment * credit.period, credit.period
-            ));
         }
     }, [financing, credit]);
 
@@ -121,7 +123,7 @@ const Pago: FunctionComponent<PagoProps> = () => {
     const handlePayment = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoadingRequest(true);
-        if (!credit || !periodPayment) {
+        if (!credit || !periodPayment || !paymentId || !userInfo?.id || !payment) {
             setModalData({
                 isOpen: true,
                 title: "Error",
@@ -133,35 +135,10 @@ const Pago: FunctionComponent<PagoProps> = () => {
             });
             return
         };
-        if (!payment) {
-            setModalData({
-                isOpen: true,
-                title: "Error",
-                message: "Hubo un problema al generar el recibo de pago.",
-                button1Text: "Cerrar",
-                hasTwoButtons: false,
-                button2Text: "",
-                closeOnOutsideClick: false,
-            });
-            return
-        }
-
-        if (!userInfo?.id) {
-            setModalData({
-                isOpen: true,
-                title: "Error",
-                message: "Hubo un problema al generar el recibo de pago.",
-                button1Text: "Cerrar",
-                hasTwoButtons: false,
-                button2Text: "",
-                closeOnOutsideClick: false,
-            })
-            return
-        }
-
         const res = await CreatePayment(
-            payment,
-            userInfo.id
+            paymentId,
+            userInfo.id,
+            lateAmount
         )
 
         if (!res) {
@@ -180,7 +157,7 @@ const Pago: FunctionComponent<PagoProps> = () => {
         setLoadingRequest(false);
         try {
             const pdfBlob = await pdf(
-                <ReciboPago credit={credit} paymentAmount={periodPayment} />
+                <ReciboPago credit={credit} paymentAmount={parseFloat(periodPayment) + lateAmount} />
             ).toBlob();
             saveAs(pdfBlob, `Recibo_Pago_${credit.id}.pdf`);
             setModalData({
@@ -221,6 +198,7 @@ const Pago: FunctionComponent<PagoProps> = () => {
                 closeOnOutsideClick={true}
                 onClose={closeModal}
             />
+
             <LoaderModal isOpen={loadingRequest} />
             <div className="details-container">
                 <div className="details-header">
@@ -231,24 +209,32 @@ const Pago: FunctionComponent<PagoProps> = () => {
                 <div className="layout-container">
                     <div className={"payment-container " + theme}>
                         {credit ? (
-                            <form className="payment-form" onSubmit={handlePayment} >
-                                <h1>Realizar cobro</h1>
-                                <div>
-                                    <label>Capital a pagar</label>
-                                    <input type="text" value={periodPayment ? "$" + periodPayment : 0} disabled />
-                                </div>
-                                <div>
-                                    <label>Información del credito</label>
-                                    <span>
-                                        <Link to={`/solicitudes/${credit.id}`} >Ver</Link>
-                                    </span>
-                                </div>
-                                <div>
-                                    <button>
-                                        Confirmar cobro y generar recibo
-                                    </button>
-                                </div>
-                            </form>
+                            <>
+                                <form className="payment-form" onSubmit={handlePayment}>
+                                    <h1>Realizar cobro</h1>
+                                    <div>
+                                        <p>Monto del período: ${periodPayment || 0}</p>
+                                        <p>Cargos por retraso: ${lateAmount || 0}</p>
+                                        <label>Capital a pagar</label>
+                                        <input
+                                            type="text"
+                                            value={periodPayment ? "$" + (lateAmount + parseFloat(periodPayment)) : 0}
+                                            disabled
+                                        />
+                                    </div>
+                                    <div>
+                                        <label>Información del crédito</label>
+                                        <span>
+                                            <Link to={`/solicitudes/${credit.id}`}>Ver</Link>
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <button>
+                                            Confirmar cobro y generar recibo
+                                        </button>
+                                    </div>
+                                </form>
+                            </>
                         ) : (
                             <div>
                                 <h1>No se encontraron datos</h1>

@@ -18,7 +18,7 @@ export const CreditPeriodObjectValues: { [key: string]: number } = {
 
 /**
  * function to convert monthly rate to another period
- * based on https://matefinanciera.com/conversion-de-tasas-de-interes (conversion de periodicidad)
+ * based on https://matefinanciera.com/conversion-de-tasas-de-interés (conversion de periodicidad)
  * @param rate the monthly rate in decimal format
  * @param period the period of the credit
  * @returns the converted rate

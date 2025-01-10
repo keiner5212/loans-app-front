@@ -10,7 +10,7 @@ import { debounce } from "lodash";
 import { useAppStore } from "@/store/appStore";
 import { useNavigate } from "react-router-dom";
 import { TableContentIndvidual, TableHeaderType, TableRowType } from "@/components/Table/TableTypes";
-import { formatUtcToLocal } from "@/utils/formats/formatToLocal";
+import { formatUtcToLocal } from "@/utils/formats/Dates";
 import { FaEnvelope, FaEye, FaWhatsapp } from "react-icons/fa";
 import { TableContextProvider } from "@/components/Table/TableService";
 import { TableContainer } from "@/components/Table/TableContainer";

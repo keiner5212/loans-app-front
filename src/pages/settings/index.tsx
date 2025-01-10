@@ -32,6 +32,7 @@ const Configuracion: FC = () => {
         signaturefromApi: null,
         documentLogofromApi: null,
         interestRate: 0,
+        dailyInerestDelay: 0,
         alertFrequency: "Diaria",
         maxCreditAmount: 0,
         minCreditAmount: 0,
@@ -51,6 +52,7 @@ const Configuracion: FC = () => {
         const loadConfigurations = async () => {
             try {
                 const interestRateRes = await getConfig(Config.INTEREST_RATE);
+                const dailyInerestDelay = await getConfig(Config.DAILY_INTEREST_DELAY);
                 const alertFrequencyRes = await getConfig(Config.ALERT_FREQUENCY);
                 const signatureRes = await getConfig(Config.SIGNATURE);
                 const documentLogoRes = await getConfig(Config.DOCUMENT_LOGO);
@@ -64,6 +66,7 @@ const Configuracion: FC = () => {
 
                 setFormData({
                     interestRate: parseFloat(interestRateRes?.data.value || "0"),
+                    dailyInerestDelay: parseFloat(dailyInerestDelay?.data.value || "0"),
                     alertFrequency: alertFrequencyRes?.data.value || "Diaria",
                     signaturefromApi: signatureRes?.data.value || null,
                     documentLogofromApi: documentLogoRes?.data.value || null,
@@ -160,6 +163,7 @@ const Configuracion: FC = () => {
             }
 
             await setConfig(Config.INTEREST_RATE, formData.interestRate.toString());
+            await setConfig(Config.DAILY_INTEREST_DELAY, formData.dailyInerestDelay.toString());
             await setConfig(Config.ALERT_FREQUENCY, formData.alertFrequency);
             await setConfig(Config.SIGNATURE, signaturePath || "");
             await setConfig(Config.DOCUMENT_LOGO, documentLogoPath || "");
@@ -225,7 +229,19 @@ const Configuracion: FC = () => {
                             min="0"
                             step="0.001"
                         />
-                        <span className={theme}>Equivalente a: {formData.interestRate * 100}%</span>
+                        <span className={theme}>Equivalente a: {formData.interestRate * 100}% de interés mensual</span>
+                    </div>
+                    <div>
+                        <label>Tasa de Interés por retraso diario (0.01 = 1%):</label>
+                        <input
+                            type="number"
+                            name="dailyInerestDelay"
+                            value={formData.dailyInerestDelay}
+                            onChange={handleInputChange}
+                            min="0"
+                            step="0.001"
+                        />
+                        <span className={theme}>Equivalente a: {formData.dailyInerestDelay * 100}% de interés (sobre el pago) por dia de retraso</span>
                     </div>
                     <div>
                         <label>Monto Máximo de Crédito (0 = Desactivado):</label>

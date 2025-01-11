@@ -14,6 +14,15 @@ export function formatUtcToLocal(utcDateStr: string | undefined | null, locale: 
     });
 }
 
+export function getDatePartsFormatted(date: Date): { day: string, month: string, year: string } {
+    const day = date.getDate().toString().padStart(2, '0'); // Asegura que el día tenga dos dígitos
+    const month = (date.getMonth() + 1).toString().padStart(2, '0'); // Los meses en JavaScript son 0-indexados, por lo que se suma 1
+    const year = date.getFullYear().toString(); // El año siempre tiene 4 dígitos
+
+    return { day, month, year };
+}
+
+
 // Calcula el número de días entre dos fechas
 export const calculateDaysBetween = (date1: Date, date2: Date): number => {
     const timeDifference = date2.getTime() - date1.getTime();

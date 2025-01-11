@@ -17,6 +17,9 @@ import { GetPayment } from "@/api/payments/GetPayments";
 import { calculateDaysDelay } from "@/utils/formats/Dates";
 import { getConfig } from "@/api/config/GetConfig";
 import { Config } from "@/constants/config/Config";
+import { getUserById } from "@/api/user/userData";
+import { getFile } from "@/api/files/GetFiles";
+import { CreditType } from "@/constants/credits/Credit";
 
 export enum PaymentStatus {
     PENDING = "PENDING",
@@ -154,12 +157,66 @@ const Pago: FunctionComponent<PagoProps> = () => {
             return;
         }
 
-        setLoadingRequest(false);
+        handleGenerateReceipt(paymentId.toString(), periodPayment, lateAmount.toString());
+    };
+
+
+    const handleGenerateReceipt = async (id: string, periodPayment: string, lateAmount: string) => {
         try {
+            if (!payment) {
+                throw new Error("Payment not found");
+            };
+            if (!credit) {
+                throw new Error("Credit not found");
+            };
+            const localFinancing = financing || {}
+            if (!localFinancing) {
+                localFinancing["vehicleVIN"] = "";
+            };
+            const emplooyeId = payment["userCreatorId"];
+            const signatureRes = await getConfig(Config.DOCUMENT_LOGO);
+            let logoUrl = "https://th.bing.com/th/id/OIP.LmjRjBonaZtB0o-oo3CuNgAAAA?w=350&h=247&rs=1&pid=ImgDetMain"
+            if (signatureRes) {
+                const fileResponse = await getFile(signatureRes.data.value);
+                logoUrl = URL.createObjectURL(fileResponse);
+            }
+            const documentNameRes = await getConfig(Config.DOCUMENT_NAME);
+            const companyRegistrationRes = await getConfig(Config.COMPANY_REGISTRATION);
+            const companyAddressRes = await getConfig(Config.COMPANY_ADDRESS);
+            const companyPhoneRes = await getConfig(Config.COMPANY_PHONE);
+            const companyEmailRes = await getConfig(Config.COMPANY_EMAIL);
+            const eMployeeDataRes = await getUserById(Number(emplooyeId));
+            const clientDataRes = await getUserById(Number(credit["userId"]));
+            setLoadingRequest(false);
             const pdfBlob = await pdf(
-                <ReciboPago credit={credit} paymentAmount={parseFloat(periodPayment) + lateAmount} />
+                <ReciboPago
+                    Credittype={credit["creditType"] as CreditType}
+                    FinancingVehicle={localFinancing["vehicleVIN"]}
+                    ClientDocument={clientDataRes.document || ""}
+                    CompanyRegistration={companyRegistrationRes?.data.value || ""}
+                    ClientDocumentType={clientDataRes.document_type || ""}
+                    ClientEmail={clientDataRes.email || ""}
+                    ClientName={clientDataRes.name || ""}
+                    ClientPhone={clientDataRes.phone || ""}
+                    CompanyAddress={companyAddressRes?.data.value || ""}
+                    CompanyEmail={companyEmailRes?.data.value || ""}
+                    CompanyLogoURL={logoUrl}
+                    CompanyName={documentNameRes?.data.value || "Company Name"}
+                    CompanyPhone={companyPhoneRes?.data.value || ""}
+                    EmployeeDocument={eMployeeDataRes.document}
+                    EmployeeDocumentType={eMployeeDataRes.document_type}
+                    EmployeeName={eMployeeDataRes.name}
+                    ID={id}
+                    LateInterest={parseFloat(lateAmount)}
+                    LeftDebt={parseFloat(credit["requestedAmount"].toString()) - (parseFloat(periodPayment) * payment["period"])}
+                    PeriodNumber={payment["period"]}
+                    PeriodPayment={parseFloat(periodPayment)}
+                    TotalDebt={credit["requestedAmount"]}
+                    PaymentDate={new Date(payment["paymentDate"])}
+                    TotalPayment={parseFloat(periodPayment) + parseFloat(lateAmount)}
+                />
             ).toBlob();
-            saveAs(pdfBlob, `Recibo_Pago_${credit.id}.pdf`);
+            saveAs(pdfBlob, `Recibo_Pago_${id}.pdf`);
             setModalData({
                 isOpen: true,
                 title: "Éxito",
@@ -172,6 +229,7 @@ const Pago: FunctionComponent<PagoProps> = () => {
             navigate("/cobros");
         } catch (error) {
             console.error("Error al generar el PDF:", error);
+            setLoadingRequest(false);
             setModalData({
                 isOpen: true,
                 title: "Error",
@@ -182,7 +240,7 @@ const Pago: FunctionComponent<PagoProps> = () => {
                 closeOnOutsideClick: false,
             });
         }
-    };
+    }
 
     return (
         <Layout>

@@ -273,7 +273,7 @@ const Configuracion: FC = () => {
                         />
                     </div>
                     <div>
-                        <label>Registro de la Empresa:</label>
+                        <label>Registro de la Empresa (RTN):</label>
                         <input
                             type="text"
                             name="companyRegistration"

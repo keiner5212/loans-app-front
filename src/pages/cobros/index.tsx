@@ -4,7 +4,7 @@ import "@/components/tabs/tabs.css";
 import { openContent } from "@/components/tabs";
 import "../solicitudes/solicitudes.css";
 import "./cobros.css";
-import { searchUser } from "@/api/user/userData";
+import { getUserById, searchUser } from "@/api/user/userData";
 import SimpleModal from "@/components/modal/simpleModal/ModalSimple";
 import LoaderModal from "@/components/modal/Loader/LoaderModal";
 import { GetCredit, GetCreditsByUser } from "@/api/credit/GetCredits";
@@ -29,6 +29,7 @@ import { getConfig } from "@/api/config/GetConfig";
 import { Config } from "@/constants/config/Config";
 import ReciboPago from "@/pdf/ReciboPago";
 import { pdf } from "@react-pdf/renderer";
+import { getFile } from "@/api/files/GetFiles";
 
 const rowkeys = [
   "id",
@@ -329,8 +330,61 @@ const Cobros: FC = () => {
 
   const handleGenerateReceipt = async (id: string, periodPayment: string, lateAmount: string) => {
     try {
+      setLoadingRequest(true);
+      const payment = paymentsBackup.find((payment: any) => payment.id == id)
+      if (!payment) {
+        throw new Error("Payment not found");
+      };
+      const credit = resultCredits.find((credit: any) => credit.id == payment["creditId"])
+      if (!credit) {
+        throw new Error("Credit not found");
+      };
+      const financing = selectedCreditData.financing || {};
+      if (!financing) {
+        financing["vehicleVIN"] = "";
+      };
+      const emplooyeId = payment["userCreatorId"];
+      const signatureRes = await getConfig(Config.DOCUMENT_LOGO);
+      let logoUrl = "https://th.bing.com/th/id/OIP.LmjRjBonaZtB0o-oo3CuNgAAAA?w=350&h=247&rs=1&pid=ImgDetMain"
+      if (signatureRes) {
+        const fileResponse = await getFile(signatureRes.data.value);
+        logoUrl = URL.createObjectURL(fileResponse);
+      }
+      const documentNameRes = await getConfig(Config.DOCUMENT_NAME);
+      const companyRegistrationRes = await getConfig(Config.COMPANY_REGISTRATION);
+      const companyAddressRes = await getConfig(Config.COMPANY_ADDRESS);
+      const companyPhoneRes = await getConfig(Config.COMPANY_PHONE);
+      const companyEmailRes = await getConfig(Config.COMPANY_EMAIL);
+      const eMployeeDataRes = await getUserById(Number(emplooyeId));
+      const clientDataRes = await getUserById(Number(credit["userId"]));
+      setLoadingRequest(false);
       const pdfBlob = await pdf(
-        <ReciboPago credit={selectedCreditData.credit} paymentAmount={parseFloat(periodPayment) + parseFloat(lateAmount)} />
+        <ReciboPago
+          Credittype={credit["creditType"]}
+          FinancingVehicle={financing["vehicleVIN"]}
+          ClientDocument={clientDataRes.document || ""}
+          CompanyRegistration={companyRegistrationRes?.data.value || ""}
+          ClientDocumentType={clientDataRes.document_type || ""}
+          ClientEmail={clientDataRes.email || ""}
+          ClientName={clientDataRes.name || ""}
+          ClientPhone={clientDataRes.phone || ""}
+          CompanyAddress={companyAddressRes?.data.value || ""}
+          CompanyEmail={companyEmailRes?.data.value || ""}
+          CompanyLogoURL={logoUrl}
+          CompanyName={documentNameRes?.data.value || "Company Name"}
+          CompanyPhone={companyPhoneRes?.data.value || ""}
+          EmployeeDocument={eMployeeDataRes.document}
+          EmployeeDocumentType={eMployeeDataRes.document_type}
+          EmployeeName={eMployeeDataRes.name}
+          ID={id}
+          LateInterest={parseFloat(lateAmount)}
+          LeftDebt={parseFloat(credit["requestedAmount"].toString()) - (parseFloat(periodPayment) * payment["period"])}
+          PeriodNumber={payment["period"]}
+          PeriodPayment={parseFloat(periodPayment)}
+          TotalDebt={credit["requestedAmount"]}
+          PaymentDate={new Date(payment["paymentDate"])}
+          TotalPayment={parseFloat(periodPayment) + parseFloat(lateAmount)}
+        />
       ).toBlob();
       saveAs(pdfBlob, `Recibo_Pago_${id}.pdf`);
       setModalData({
@@ -345,6 +399,7 @@ const Cobros: FC = () => {
       navigate("/cobros");
     } catch (error) {
       console.error("Error al generar el PDF:", error);
+      setLoadingRequest(false);
       setModalData({
         isOpen: true,
         title: "Error",

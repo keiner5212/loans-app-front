@@ -34,6 +34,7 @@ import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 import CustomCheckbox from "@/components/check";
 import TextModal from "@/components/modal/TextModal";
+import { useNavigationContext } from "@/contexts/NavigationContext";
 
 const rowkeys = [
   "id",
@@ -75,6 +76,7 @@ const Solicitudes: FC = () => {
   const [solicitudesBack, setSolicitudesBack] = useState<any[]>([]);
   const [rows, setRows] = useState<TableRowType[]>([]);
   const [showFilterBox, setShowFilterBox] = useState(false);
+  const { lastPage, setLastPage } = useNavigationContext();
   const [selectedFilter, setSelectedFilter] = useState({
     type: "",
     status: "",
@@ -83,6 +85,7 @@ const Solicitudes: FC = () => {
   const toggleFilterBox = () => {
     setShowFilterBox(!showFilterBox);
   };
+
 
   const handleFilterChange = (e: any) => {
     const { name, value } = e.target;
@@ -151,6 +154,18 @@ const Solicitudes: FC = () => {
       setSolicitudesBack(solicitudesRes)
     });
   }, []);
+
+  useEffect(() => {
+    if (lastPage) {
+      if (lastPage.startsWith("/details")) {
+        if (adminSolicirudesRef.current) {
+          adminSolicirudesRef.current.click();
+        }
+        setLastPage(null);
+      }
+    }
+
+  }, [lastPage]);
 
   const [loadingTable, setLoadingTable] = useState(false);
   const handleReloadCredits = useCallback(
@@ -1104,6 +1119,8 @@ const Solicitudes: FC = () => {
     )
   }, [solicitudes]);
 
+  const adminSolicirudesRef = useRef<HTMLButtonElement>(null);
+
 
 
   return (
@@ -1155,6 +1172,7 @@ const Solicitudes: FC = () => {
         </button>
         <button
           className="tablinks"
+          ref={adminSolicirudesRef}
           onClick={(event) => openContent(event, "admin_solicitudes")}
         >
           Administrar solicitudes

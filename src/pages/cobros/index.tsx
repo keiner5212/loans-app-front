@@ -120,7 +120,9 @@ const Cobros: FC = () => {
   useEffect(() => {
     if (lastPage) {
       if (lastPage.startsWith("/cobros")) {
-        ReloadPayments(lastPage.split("/cobros/")[1]);
+        const id = lastPage.split("/cobros/")[1];
+        ReloadPayments(id);
+        handleViewPayments(id);
         setLastPage(null);
       }
     }

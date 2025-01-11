@@ -8,6 +8,7 @@ import { useAppStore } from "@/store/appStore";
 import { CreditType } from "@/constants/credits/Credit";
 import { getFile } from "@/api/files/GetFiles";
 import { formatUtcToLocal } from "@/utils/formats/Dates";
+import { useNavigationContext } from "@/contexts/NavigationContext";
 
 export interface Credit {
     id: number;
@@ -37,11 +38,13 @@ const CreditDetails: FunctionComponent = () => {
     const [credit, setCredit] = useState<Credit | null>(null);
     const [financing, setFinancing] = useState<any | null>(null);
     const [loading, setLoading] = useState(true);
+    const { setLastPage } = useNavigationContext();
     const navigate = useNavigate();
     const { theme } = useAppStore();
     const [contractSignedUrl, setSignatureUrl] = useState<string | null>(null);
 
     useEffect(() => {
+        setLastPage("/details/");
         if (id) {
             GetCredit(Number(id))
                 .then((response) => {

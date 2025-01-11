@@ -173,7 +173,7 @@ const Pago: FunctionComponent<PagoProps> = () => {
             if (!localFinancing) {
                 localFinancing["vehicleVIN"] = "";
             };
-            const emplooyeId = payment["userCreatorId"];
+            const emplooyeId = userInfo.id;
             const signatureRes = await getConfig(Config.DOCUMENT_LOGO);
             let logoUrl = "https://th.bing.com/th/id/OIP.LmjRjBonaZtB0o-oo3CuNgAAAA?w=350&h=247&rs=1&pid=ImgDetMain"
             if (signatureRes) {
@@ -208,7 +208,7 @@ const Pago: FunctionComponent<PagoProps> = () => {
                     EmployeeName={eMployeeDataRes.name}
                     ID={id}
                     LateInterest={parseFloat(lateAmount)}
-                    LeftDebt={parseFloat(credit["requestedAmount"].toString()) - (parseFloat(periodPayment) * payment["period"])}
+                    LeftDebt={parseFloat((parseFloat(credit["requestedAmount"].toString()) - (parseFloat(periodPayment) * payment["period"])).toFixed(2))}
                     PeriodNumber={payment["period"]}
                     PeriodPayment={parseFloat(periodPayment)}
                     TotalDebt={credit["requestedAmount"]}

@@ -215,7 +215,7 @@ const Cobros: FC = () => {
           setResultCredits(res.data.map((credit: any) => {
             return {
               ...credit,
-              remainingDebt: credit.status == Status.CANCELED ? 0 : credit.requestedAmount - credit.approvedAmount
+              remainingDebt: parseFloat((credit.status == Status.CANCELED ? 0 : credit.requestedAmount - credit.approvedAmount).toFixed(2))
             }
           }));
         } else {
@@ -378,7 +378,7 @@ const Cobros: FC = () => {
           EmployeeName={eMployeeDataRes.name}
           ID={id}
           LateInterest={parseFloat(lateAmount)}
-          LeftDebt={parseFloat(credit["requestedAmount"].toString()) - (parseFloat(periodPayment) * payment["period"])}
+          LeftDebt={parseFloat((parseFloat(credit["requestedAmount"].toString()) - (parseFloat(periodPayment) * payment["period"])).toFixed(2))}
           PeriodNumber={payment["period"]}
           PeriodPayment={parseFloat(periodPayment)}
           TotalDebt={credit["requestedAmount"]}

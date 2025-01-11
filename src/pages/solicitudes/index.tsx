@@ -35,6 +35,7 @@ import { saveAs } from 'file-saver';
 import CustomCheckbox from "@/components/check";
 import TextModal from "@/components/modal/TextModal";
 import { useNavigationContext } from "@/contexts/NavigationContext";
+import { getFile } from "@/api/files/GetFiles";
 
 const rowkeys = [
   "id",
@@ -147,7 +148,7 @@ const Solicitudes: FC = () => {
 
         return {
           ...creditres,
-          remainingDebt: creditres.status == Status.CANCELED ? 0 : creditres.requestedAmount - creditres.approvedAmount
+          remainingDebt: parseFloat((creditres.status == Status.CANCELED ? 0 : creditres.requestedAmount - creditres.approvedAmount).toFixed(2))
         }
       });
       setSolicitudes(solicitudesRes)
@@ -176,7 +177,7 @@ const Solicitudes: FC = () => {
 
           return {
             ...creditres,
-            remainingDebt: creditres.status == Status.CANCELED ? 0 : creditres.requestedAmount - creditres.approvedAmount
+            remainingDebt: parseFloat((creditres.status == Status.CANCELED ? 0 : creditres.requestedAmount - creditres.approvedAmount).toFixed(2))
           }
         });
         setSolicitudes(solicitudesRes)
@@ -833,31 +834,137 @@ const Solicitudes: FC = () => {
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Amortización');
 
-    // Definir las columnas
-    worksheet.columns = [
-      { header: 'Periodo', key: 'periodo', width: 10 },
-      { header: 'Pago', key: 'pago', width: 15 },
-      { header: 'Intereses', key: 'intereses', width: 15 },
-      { header: 'Amortización', key: 'amortizacion', width: 15 },
-      { header: 'Deuda Restante', key: 'deudaRestante', width: 20 },
-    ];
+    interface ConfigResponse {
+      data: {
+        value: string;
+      };
+    }
+    // Fetch company information
+    const [logoRes, documentNameRes, companyRegistrationRes, companyAddressRes, companyPhoneRes, companyEmailRes]: ConfigResponse[] =
+      await Promise.all([
+        getConfig(Config.DOCUMENT_LOGO),
+        getConfig(Config.DOCUMENT_NAME),
+        getConfig(Config.COMPANY_REGISTRATION),
+        getConfig(Config.COMPANY_ADDRESS),
+        getConfig(Config.COMPANY_PHONE),
+        getConfig(Config.COMPANY_EMAIL)
+      ]);
 
-    // Agregar las filas desde el array
-    amortizacion.forEach((dato) => {
-      worksheet.addRow({
-        periodo: dato.periodo,
-        pago: dato.pago,
-        intereses: dato.intereses,
-        amortizacion: dato.amortizacion,
-        deudaRestante: dato.deudaRestante,
-      });
+    // Set up logo
+    let logoUrl = "https://th.bing.com/th/id/OIP.LmjRjBonaZtB0o-oo3CuNgAAAA?w=350&h=247&rs=1&pid=ImgDetMain";
+    if (logoRes) {
+      const fileResponse = await getFile(logoRes.data.value);
+      logoUrl = URL.createObjectURL(fileResponse);
+    }
+
+    // Add logo to Excel file
+    const logoImage = await fetch(logoUrl)
+      .then((res) => res.arrayBuffer())
+      .then((arrayBuffer) => new Uint8Array(arrayBuffer));
+
+    const logoId = workbook.addImage({
+      buffer: logoImage,
+      extension: 'png',
     });
 
-    // Negrita para encabezados
-    worksheet.getRow(1).font = { bold: true };
+    // Adjust row and column sizes
 
-    // Agregar bordes a las celdas
-    worksheet.eachRow((row) => {
+    // fila vacía
+    worksheet.getRow(1).height = 10;
+    // columna vacía
+    worksheet.getColumn(1).width = 5;
+
+    worksheet.getRow(2).height = 70; // Logo
+    worksheet.getRow(3).height = 20; // Document name
+    worksheet.getRow(4).height = 20; // Company registration
+    worksheet.getRow(5).height = 20; // Address
+    worksheet.getRow(6).height = 20; // Phone
+    worksheet.getRow(7).height = 20; // Email
+
+    // Add logo
+    worksheet.mergeCells('B2:C2'); // logo
+    worksheet.mergeCells('D2:F2'); // Nombre del documento
+    worksheet.addImage(logoId, {
+      tl: { col: 1, row: 1 }, 
+      ext: { width: 210, height: 93.5 },
+    });
+
+    // Add document name
+    worksheet.getCell('D2').value = "Tabla de Amortización";
+    //estilo de la celda
+    worksheet.getCell('D2').font = { bold: true, size: 16 };
+    //bordes
+    worksheet.getCell('B2').border = {
+      top: { style: 'thin' },
+      left: { style: 'thin' },
+      bottom: { style: 'thin' },
+      right: { style: 'thin' },
+    }
+    worksheet.getCell('D2').border = {
+      top: { style: 'thin' },
+      left: { style: 'thin' },
+      bottom: { style: 'thin' },
+      right: { style: 'thin' },
+    }
+    //alineacion
+    worksheet.getCell('B2').alignment = { vertical: 'middle', horizontal: 'center' };
+    worksheet.getCell('D2').alignment = { vertical: 'middle', horizontal: 'center' };
+
+
+    // Add company information
+    const headerInfo: Array<{ cell: string; value: string; font: Partial<ExcelJS.Font> }> = [
+      { cell: 'B3', value: "Empresa: ", font: { bold: true, size: 16 } },
+      { cell: 'D3', value: documentNameRes?.data.value || 'Nombre de Documento', font: { size: 16 } },
+      { cell: 'B4', value: "RTN: ", font: { bold: true, size: 12 } },
+      { cell: 'D4', value: companyRegistrationRes?.data.value || 'Registro de Documento', font: { size: 10 } },
+      { cell: 'B5', value: "Dirección: ", font: { bold: true, size: 12 } },
+      { cell: 'D5', value: companyAddressRes?.data.value || 'Dirección de Documento', font: { size: 10 } },
+      { cell: 'B6', value: "Teléfono: ", font: { bold: true, size: 12 } },
+      { cell: 'D6', value: companyPhoneRes?.data.value || 'Teléfono de Documento', font: { size: 10 } },
+      { cell: 'B7', value: "Email: ", font: { bold: true, size: 12 } },
+      { cell: 'D7', value: companyEmailRes?.data.value || 'Email de Documento', font: { size: 10 } },
+    ];
+
+    headerInfo.forEach(({ cell, value, font }) => {
+      if (cell.startsWith("B")) worksheet.mergeCells(`${cell}:C${cell.charAt(1)}`);
+      if (cell.startsWith("D")) worksheet.mergeCells(`${cell}:F${cell.charAt(1)}`);
+      const wsCell = worksheet.getCell(cell);
+      wsCell.value = value;
+      wsCell.font = font;
+      wsCell.alignment = { vertical: 'middle', horizontal: 'center' };
+      wsCell.border = {
+        top: { style: 'thin' },
+        left: { style: 'thin' },
+        bottom: { style: 'thin' },
+        right: { style: 'thin' },
+      };
+    });
+
+    // Set up amortization table
+    const tableStartRow = 9;
+    worksheet.getRow(tableStartRow).values = ["", 'Periodo', 'Pago', 'Intereses', 'Amortización', 'Deuda Restante'];
+    worksheet.getRow(tableStartRow).font = { bold: true };
+    worksheet.getRow(tableStartRow).alignment = { vertical: 'middle', horizontal: 'center' };
+
+    worksheet.columns = [
+      { key: '', width: 5 },
+      { key: 'periodo', width: 10 },
+      { key: 'pago', width: 20 },
+      { key: 'intereses', width: 20 },
+      { key: 'amortizacion', width: 20 },
+      { key: 'deudaRestante', width: 20 },
+    ];
+
+    // Add amortization data
+    amortizacion.forEach((dato) => {
+      const row = worksheet.addRow({
+        periodo: dato.periodo,
+        pago: parseFloat(dato.pago.toFixed(3)),
+        intereses: parseFloat(dato.intereses.toFixed(3)),
+        amortizacion: parseFloat(dato.amortizacion.toFixed(3)),
+        deudaRestante: parseFloat(dato.deudaRestante.toFixed(3)),
+      });
+      row.alignment = { vertical: 'middle', horizontal: 'center' };
       row.eachCell((cell) => {
         cell.border = {
           top: { style: 'thin' },
@@ -865,21 +972,21 @@ const Solicitudes: FC = () => {
           bottom: { style: 'thin' },
           right: { style: 'thin' },
         };
-        cell.alignment = { vertical: 'middle', horizontal: 'center' };
       });
     });
 
-    // Agregar fila de totales
+    // Add totals row
     const totalRow = worksheet.addRow({
+      '': '',
       periodo: 'Totales',
-      pago: totales.totalPagado,
-      intereses: totales.totalIntereses,
-      amortizacion: totales.totalAmortizado,
+      pago: parseFloat(totales.totalPagado.toFixed(3)),
+      intereses: parseFloat(totales.totalIntereses.toFixed(3)),
+      amortizacion: parseFloat(totales.totalAmortizado.toFixed(3)),
       deudaRestante: '-',
     });
 
-    // Aplicar estilos a la fila de totales
     totalRow.font = { bold: true };
+    totalRow.alignment = { vertical: 'middle', horizontal: 'center' };
     totalRow.eachCell((cell) => {
       cell.border = {
         top: { style: 'thin' },
@@ -887,19 +994,9 @@ const Solicitudes: FC = () => {
         bottom: { style: 'thin' },
         right: { style: 'thin' },
       };
-      cell.alignment = { vertical: 'middle', horizontal: 'center' };
     });
 
-
-    worksheet.eachRow((row, rowIndex) => {
-      row.eachCell((cell, colNumber) => {
-        if (rowIndex > 1 && colNumber !== 1 && colNumber !== 5) {
-          cell.numFmt = '#,##0.00';
-        }
-      });
-    });
-
-    // Generar el archivo Excel
+    // Generate and save Excel file
     const buffer = await workbook.xlsx.writeBuffer();
     const blob = new Blob([buffer], {
       type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
@@ -907,6 +1004,7 @@ const Solicitudes: FC = () => {
 
     saveAs(blob, 'Tabla_Amortizacion.xlsx');
   };
+
 
   const handleGenerateAmortization = async (id: any) => {
     setLoadingRequest(true);

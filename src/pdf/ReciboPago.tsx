@@ -1,13 +1,19 @@
 import { CreditType } from "@/constants/credits/Credit";
 import { getDatePartsFormatted } from "@/utils/formats/Dates";
-import { Document, Page, StyleSheet, Text, View, Image } from "@react-pdf/renderer";
+import { Document, Page, StyleSheet, Text, View, Image, Font } from "@react-pdf/renderer";
 import { FunctionComponent } from "react";
+import arialFont from "@/assets/fonts/arial-narrow-7-font/ArialNarrow7-9YJ9n.ttf"
+
+Font.register({
+    family: 'CustomFont',
+    src: arialFont
+});
 
 const styles = StyleSheet.create({
     page: {
         padding: 20,
         fontSize: 10,
-        fontFamily: 'Helvetica',
+        fontFamily: 'CustomFont',
     },
     header: {
         flexDirection: "row",
@@ -194,7 +200,7 @@ const ReciboPago: FunctionComponent<ReciboPagoProps> = ({
 
                 {/* Payment Details */}
                 <View style={styles.section}>
-                    <Text style={styles.bold}>Detalles del cobro:</Text>
+                    <Text style={styles.bold}>Detalles del crédito:</Text>
                     <View style={styles.table}>
                         <View style={styles.row}>
                             <Text style={styles.cell}><Text style={styles.bold}>Tipo de Credito:</Text></Text>

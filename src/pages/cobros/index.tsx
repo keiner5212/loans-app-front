@@ -11,10 +11,11 @@ import { GetCredit, GetCreditsByUser } from "@/api/credit/GetCredits";
 import { TableContentIndvidual, TableHeaderType, TableRowType } from "@/components/Table/TableTypes";
 import { useAppStore } from "@/store/appStore";
 import { calculateDaysDelay, formatUtcToLocal } from "@/utils/formats/Dates";
-import { FaDollarSign, FaEye, FaList } from "react-icons/fa";
+import { FaDollarSign, FaEye, FaList, FaReceipt } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { TableContextProvider } from "@/components/Table/TableService";
 import { TableContainer } from "@/components/Table/TableContainer";
+import { saveAs } from "file-saver";
 import { Loader } from "@/components/Loader";
 import { GetPaymentsOfCredit } from "@/api/payments/GetPayments";
 import { Status } from "@/constants/credits/Credit";
@@ -26,8 +27,8 @@ import { UpdatePaymentsOfCredit } from "@/api/payments/UpdatePayment";
 import { useNavigationContext } from "@/contexts/NavigationContext";
 import { getConfig } from "@/api/config/GetConfig";
 import { Config } from "@/constants/config/Config";
-
-// TODO: eliminar la opcion de pagar credito desde la tabla de creditos, que se pague directamente en la tabla de pagos
+import ReciboPago from "@/pdf/ReciboPago";
+import { pdf } from "@react-pdf/renderer";
 
 const rowkeys = [
   "id",
@@ -326,6 +327,36 @@ const Cobros: FC = () => {
     navigate(`/solicitudes/pagos/${id}`);
   }
 
+  const handleGenerateReceipt = async (id: string, periodPayment: string, lateAmount: string) => {
+    try {
+      const pdfBlob = await pdf(
+        <ReciboPago credit={selectedCreditData.credit} paymentAmount={parseFloat(periodPayment) + parseFloat(lateAmount)} />
+      ).toBlob();
+      saveAs(pdfBlob, `Recibo_Pago_${id}.pdf`);
+      setModalData({
+        isOpen: true,
+        title: "Éxito",
+        message: "El recibo de pago se ha generado y descargado correctamente.",
+        button1Text: "Cerrar",
+        hasTwoButtons: false,
+        button2Text: "",
+        closeOnOutsideClick: false,
+      });
+      navigate("/cobros");
+    } catch (error) {
+      console.error("Error al generar el PDF:", error);
+      setModalData({
+        isOpen: true,
+        title: "Error",
+        message: "Hubo un problema al generar el recibo de pago.",
+        button1Text: "Cerrar",
+        hasTwoButtons: false,
+        button2Text: "",
+        closeOnOutsideClick: false,
+      });
+    }
+  }
+
   useEffect(() => {
     if (!payments) return
     setPagosRows(
@@ -382,6 +413,15 @@ const Cobros: FC = () => {
                 icon: <FaDollarSign />,
                 onClick: () => handleDoPayment(fila["id"]),
                 background: "#3f649ef4",
+                color: theme === "dark" ? "#fff" : "#000",
+              }
+              ] : [],
+            ...(fila["status"] == PaymentStatus.LATE_RELEASED || fila["status"] == PaymentStatus.RELEASED) ?
+              [{
+                label: "Generar recibo",
+                icon: <FaReceipt />,
+                onClick: () => handleGenerateReceipt(fila["id"], fila["amount"], fila["lateInterest"]),
+                background: "#1f6e44",
                 color: theme === "dark" ? "#fff" : "#000",
               }
               ] : [],

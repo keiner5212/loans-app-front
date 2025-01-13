@@ -10,6 +10,7 @@ import "./cobros.css"
 import { pdf } from "@react-pdf/renderer";
 import { saveAs } from "file-saver";
 import ReciboPago from "../../pdf/ReciboPago";
+import noImage from "@/assets/images/noImage.jpg"
 import { CreatePayment } from "@/api/payments/CreatePayment";
 import { useAppStore } from "@/store/appStore";
 import { useNavigationContext } from "@/contexts/NavigationContext";
@@ -175,7 +176,7 @@ const Pago: FunctionComponent<PagoProps> = () => {
             };
             const emplooyeId = userInfo.id;
             const signatureRes = await getConfig(Config.DOCUMENT_LOGO);
-            let logoUrl = "https://th.bing.com/th/id/OIP.LmjRjBonaZtB0o-oo3CuNgAAAA?w=350&h=247&rs=1&pid=ImgDetMain"
+            let logoUrl = noImage
             if (signatureRes) {
                 const fileResponse = await getFile(signatureRes.data.value);
                 logoUrl = URL.createObjectURL(fileResponse);

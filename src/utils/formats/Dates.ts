@@ -1,3 +1,5 @@
+import { CreditPeriod } from "./Credits";
+
 export function formatUtcToLocal(utcDateStr: string | undefined | null, locale: string, timeZone: string): string | undefined {
     if (!utcDateStr) return undefined;
 
@@ -36,3 +38,26 @@ export const calculateDaysDelay = (expectedDate: Date, actualDate: Date): number
     }
     return 0; // No hay retraso si actualDate no es mayor que expectedDate
 };
+
+export function calculateNextPeriodDate(date: Date, period: CreditPeriod): Date {
+    const nextDate = new Date(date); // Crear una nueva instancia para no modificar la original
+
+    switch (period) {
+        case CreditPeriod.MENSUAL:
+            nextDate.setMonth(nextDate.getMonth() + 1); // Agregar un mes
+            break;
+
+        case CreditPeriod.SEMANAL:
+            nextDate.setDate(nextDate.getDate() + 7); // Agregar 7 días
+            break;
+
+        case CreditPeriod.QUINCENAL:
+            nextDate.setDate(nextDate.getDate() + 14); // Agregar 14 días
+            break;
+
+        default:
+            throw new Error("Período no válido");
+    }
+
+    return nextDate;
+}

@@ -17,6 +17,7 @@ import { TableContextProvider } from "@/components/Table/TableService";
 import { TableContainer } from "@/components/Table/TableContainer";
 import { saveAs } from "file-saver";
 import { Loader } from "@/components/Loader";
+import noImage from "@/assets/images/noImage.jpg"
 import { GetPaymentsOfCredit } from "@/api/payments/GetPayments";
 import { Status } from "@/constants/credits/Credit";
 import { obtenerDetallePeriodo } from "@/utils/amortizacion/Credit";
@@ -345,7 +346,7 @@ const Cobros: FC = () => {
       };
       const emplooyeId = payment["userCreatorId"];
       const signatureRes = await getConfig(Config.DOCUMENT_LOGO);
-      let logoUrl = "https://th.bing.com/th/id/OIP.LmjRjBonaZtB0o-oo3CuNgAAAA?w=350&h=247&rs=1&pid=ImgDetMain"
+      let logoUrl = noImage
       if (signatureRes) {
         const fileResponse = await getFile(signatureRes.data.value);
         logoUrl = URL.createObjectURL(fileResponse);

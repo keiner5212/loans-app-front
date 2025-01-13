@@ -2,18 +2,25 @@ import { CreditType } from "@/constants/credits/Credit";
 import { getDatePartsFormatted } from "@/utils/formats/Dates";
 import { Document, Page, StyleSheet, Text, View, Image, Font } from "@react-pdf/renderer";
 import { FunctionComponent } from "react";
-import arialFont from "@/assets/fonts/arial-narrow-7-font/ArialNarrow7-9YJ9n.ttf"
+import arialNarrowFont from "@/assets/fonts/arial-narrow-7-font/arial-narrow.ttf"
+import arialNarrow7BoldFont from "@/assets/fonts/arial-narrow-7-font/ArialNarrow7-9YJ9n.ttf"
 
 Font.register({
-    family: 'CustomFont',
-    src: arialFont
+    family: 'ArialNarrow',
+    src: arialNarrowFont
 });
+
+Font.register({
+    family: 'ArialNarrowBold',
+    src: arialNarrow7BoldFont
+})
+
 
 const styles = StyleSheet.create({
     page: {
         padding: 20,
         fontSize: 10,
-        fontFamily: 'CustomFont',
+        fontFamily: 'ArialNarrow',
     },
     header: {
         flexDirection: "row",
@@ -60,6 +67,7 @@ const styles = StyleSheet.create({
     },
     bold: {
         fontWeight: "bold",
+        fontFamily: 'ArialNarrowBold',
     },
     signatureBlock: {
         flexDirection: "row",
@@ -136,7 +144,7 @@ const ReciboPago: FunctionComponent<ReciboPagoProps> = ({
 
     return (
         <Document>
-            <Page size="A4" style={styles.page}>
+            <Page size={{ width: 8.5 * 72, height: 5.5 * 72 }} style={styles.page}>
                 {/* Header */}
                 <View style={styles.header}>
                     <Image src={CompanyLogoURL} style={styles.logo} />

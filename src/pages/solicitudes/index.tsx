@@ -885,12 +885,12 @@ const Solicitudes: FC = () => {
     worksheet.mergeCells('B2:C2'); // logo
     worksheet.mergeCells('D2:F2'); // Nombre del documento
     worksheet.addImage(logoId, {
-      tl: { col: 1, row: 1 }, 
+      tl: { col: 1, row: 1 },
       ext: { width: 210, height: 93.5 },
     });
 
     // Add document name
-    worksheet.getCell('D2').value = "Tabla de Amortización";
+    worksheet.getCell('D2').value = "Tabla de Amortización (Anexo 1)";
     //estilo de la celda
     worksheet.getCell('D2').font = { bold: true, size: 16 };
     //bordes
@@ -943,8 +943,17 @@ const Solicitudes: FC = () => {
     // Set up amortization table
     const tableStartRow = 9;
     worksheet.getRow(tableStartRow).values = ["", 'Periodo', 'Pago', 'Intereses', 'Amortización', 'Deuda Restante'];
-    worksheet.getRow(tableStartRow).font = { bold: true };
+    worksheet.getRow(tableStartRow).font = { bold: true, size: 14 };
     worksheet.getRow(tableStartRow).alignment = { vertical: 'middle', horizontal: 'center' };
+    //borders
+    worksheet.getRow(tableStartRow).eachCell((cell) => {
+      cell.border = {
+        top: { style: 'thin' },
+        left: { style: 'thin' },
+        bottom: { style: 'thin' },
+        right: { style: 'thin' },
+      }
+    })
 
     worksheet.columns = [
       { key: '', width: 5 },

@@ -18,50 +18,51 @@ Font.register({
 
 const styles = StyleSheet.create({
     page: {
-        padding: 20,
-        fontSize: 10,
+        padding: 15,
+        fontSize: 9,
         fontFamily: 'ArialNarrow',
     },
     header: {
         flexDirection: "row",
         justifyContent: "space-between",
         alignItems: "center",
-        marginBottom: 10,
+        marginBottom: 5,
     },
     logo: {
-        width: 100,
-        height: 50,
+        width: 90,
+        height: 45,
         borderRadius: 5,
     },
     title: {
-        fontSize: 18,
+        fontSize: 14,
         fontWeight: "bold",
         backgroundColor: "black",
         color: "white",
+        fontFamily: 'ArialNarrowBold',
         textAlign: "center",
-        padding: 5,
+        padding: 4,
         borderRadius: 5,
     },
     section: {
-        marginBottom: 10,
+        marginBottom: 5,
     },
     table: {
         display: "flex",
         flexDirection: "column",
-        marginBottom: 10,
+        marginBottom: 5,
     },
     row: {
         flexDirection: "row",
     },
     cell: {
         flex: 1,
-        padding: 5,
+        padding: 2,
         borderWidth: 1,
         borderColor: "black",
     },
     cellLast: {
         flex: 1,
-        padding: 5,
+        padding: 2,
         borderWidth: 1,
         borderColor: "black",
     },
@@ -73,8 +74,8 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         justifyContent: "space-between",
         alignItems: "center",
-        marginTop: 40,
-        gap: 10,
+        marginTop: 30,
+        gap: 5,
     },
     signature: {
         flex: 1,
@@ -156,13 +157,13 @@ const ReciboPago: FunctionComponent<ReciboPagoProps> = ({
                     <View style={styles.table}>
                         <View style={styles.row}>
                             <Text style={styles.cell}><Text style={styles.bold}>Empresa:</Text> {CompanyName}</Text>
+                            <Text style={styles.cell}><Text style={styles.bold}>RTN:</Text> {CompanyRegistration}</Text>
                             <Text style={styles.cell}><Text style={styles.bold}>Dia:</Text> {day}</Text>
                             <Text style={styles.cell}><Text style={styles.bold}>Mes:</Text> {month}</Text>
                             <Text style={styles.cellLast}><Text style={styles.bold}>Año:</Text> {year}</Text>
                             <Text style={styles.cellLast}><Text style={styles.bold}>Pago Nro.</Text> {ID}</Text>
                         </View>
                         <View style={styles.row}>
-                            <Text style={styles.cell}><Text style={styles.bold}>RTN:</Text> {CompanyRegistration}</Text>
                             <Text style={styles.cell}><Text style={styles.bold}>Dirección:</Text> {CompanyAddress}</Text>
                             <Text style={styles.cell}><Text style={styles.bold}>Correo:</Text> {CompanyEmail}</Text>
                             <Text style={styles.cellLast}><Text style={styles.bold}>Teléfono:</Text> {CompanyPhone}</Text>
@@ -186,20 +187,12 @@ const ReciboPago: FunctionComponent<ReciboPagoProps> = ({
                     <Text style={styles.bold}>Detalles del cliente:</Text>
                     <View style={styles.table}>
                         <View style={styles.row}>
-                            <Text style={styles.cell}><Text style={styles.bold}>Nombre:</Text></Text>
-                            <Text style={styles.cellLast}><Text>{ClientName}</Text></Text>
+                            <Text style={styles.cell}><Text style={styles.bold}>Nombre:</Text> {ClientName}</Text>
+                            <Text style={styles.cellLast}><Text style={styles.bold}>{ClientDocumentType}:</Text> {ClientDocument}</Text>
                         </View>
                         <View style={styles.row}>
-                            <Text style={styles.cell}><Text style={styles.bold}>{ClientDocumentType}:</Text></Text>
-                            <Text style={styles.cellLast}><Text>{ClientDocument}</Text></Text>
-                        </View>
-                        <View style={styles.row}>
-                            <Text style={styles.cell}><Text style={styles.bold}>Teléfono:</Text></Text>
-                            <Text style={styles.cellLast}><Text>{ClientPhone}</Text></Text>
-                        </View>
-                        <View style={styles.row}>
-                            <Text style={styles.cell}><Text style={styles.bold}>Correo:</Text></Text>
-                            <Text style={styles.cellLast}><Text>{ClientEmail}</Text></Text>
+                            <Text style={styles.cell}><Text style={styles.bold}>Teléfono:</Text> {ClientPhone}</Text>
+                            <Text style={styles.cellLast}><Text style={styles.bold}>Correo:</Text> {ClientEmail}</Text>
                         </View>
                     </View>
                 </View>
@@ -211,22 +204,22 @@ const ReciboPago: FunctionComponent<ReciboPagoProps> = ({
                     <Text style={styles.bold}>Detalles del crédito:</Text>
                     <View style={styles.table}>
                         <View style={styles.row}>
-                            <Text style={styles.cell}><Text style={styles.bold}>Tipo de Credito:</Text></Text>
-                            <Text style={styles.cellLast}>{Credittype}</Text>
+                            {Credittype == CreditType.FINANCING ?
+                                <>
+                                    <Text style={styles.cell}><Text style={styles.bold}>Tipo de Credito:</Text> {Credittype}</Text>
+                                    <Text style={styles.cellLast}><Text style={styles.bold}>Vehiculo de Financiamiento (VIN):</Text> {FinancingVehicle}</Text>
+                                </>
+                                :
+                                <>
+                                    <Text style={styles.cell}><Text style={styles.bold}>Tipo de Credito:</Text></Text>
+                                    <Text style={styles.cellLast}>{Credittype}</Text>
+                                </>
+                            }
+
                         </View>
-                        {Credittype == CreditType.FINANCING &&
-                            <View style={styles.row}>
-                                <Text style={styles.cell}><Text style={styles.bold}>Vehiculo de Financiamiento (VIN):</Text></Text>
-                                <Text style={styles.cellLast}>{FinancingVehicle}</Text>
-                            </View>
-                        }
                         <View style={styles.row}>
-                            <Text style={styles.cell}><Text style={styles.bold}>Deuda Total:</Text></Text>
-                            <Text style={styles.cellLast}>${TotalDebt}</Text>
-                        </View>
-                        <View style={styles.row}>
-                            <Text style={styles.cell}><Text style={styles.bold}>Deuda Restante:</Text></Text>
-                            <Text style={styles.cellLast}>${LeftDebt}</Text>
+                            <Text style={styles.cell}><Text style={styles.bold}>Deuda Total:</Text> ${TotalDebt}</Text>
+                            <Text style={styles.cellLast}><Text style={styles.bold}>Deuda Restante:</Text> ${LeftDebt}</Text>
                         </View>
                     </View>
                 </View>
@@ -236,10 +229,6 @@ const ReciboPago: FunctionComponent<ReciboPagoProps> = ({
                     <Text style={styles.bold}>Detalles del cobro:</Text>
                     <View style={styles.table}>
                         <View style={styles.row}>
-                            <Text style={styles.cell}><Text style={styles.bold}>Periodo No.:</Text></Text>
-                            <Text style={styles.cellLast}>{PeriodNumber}</Text>
-                        </View>
-                        <View style={styles.row}>
                             <Text style={styles.cell}><Text style={styles.bold}>Pago del Periodo:</Text></Text>
                             <Text style={styles.cellLast}>${PeriodPayment}</Text>
                         </View>
@@ -248,8 +237,8 @@ const ReciboPago: FunctionComponent<ReciboPagoProps> = ({
                             <Text style={styles.cellLast}>${LateInterest}</Text>
                         </View>
                         <View style={styles.row}>
-                            <Text style={styles.cell}><Text style={styles.bold}>Total a Pagar:</Text></Text>
-                            <Text style={styles.cellLast}>${TotalPayment}</Text>
+                            <Text style={styles.cell}><Text style={styles.bold}>Periodo No.:</Text> {PeriodNumber}</Text>
+                            <Text style={styles.cellLast}><Text style={styles.bold}>Total a Pagar:</Text> ${TotalPayment}</Text>
                         </View>
                     </View>
                 </View>

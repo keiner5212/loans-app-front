@@ -913,31 +913,19 @@ const Solicitudes: FC = () => {
 
     // Add company information
     const headerInfo: Array<{ cell: string; value: string; font: Partial<ExcelJS.Font> }> = [
-      { cell: 'B3', value: "Empresa: ", font: { bold: true, size: 16 } },
-      { cell: 'D3', value: documentNameRes?.data.value || 'Nombre de Documento', font: { size: 16 } },
-      { cell: 'B4', value: "RTN: ", font: { bold: true, size: 12 } },
-      { cell: 'D4', value: companyRegistrationRes?.data.value || 'Registro de Documento', font: { size: 10 } },
-      { cell: 'B5', value: "Dirección: ", font: { bold: true, size: 12 } },
-      { cell: 'D5', value: companyAddressRes?.data.value || 'Dirección de Documento', font: { size: 10 } },
-      { cell: 'B6', value: "Teléfono: ", font: { bold: true, size: 12 } },
-      { cell: 'D6', value: companyPhoneRes?.data.value || 'Teléfono de Documento', font: { size: 10 } },
-      { cell: 'B7', value: "Email: ", font: { bold: true, size: 12 } },
-      { cell: 'D7', value: companyEmailRes?.data.value || 'Email de Documento', font: { size: 10 } },
+      { cell: 'B3', value: documentNameRes?.data.value || 'Nombre de Documento', font: { size: 16 } },
+      { cell: 'B4', value: companyRegistrationRes?.data.value || 'Registro de Documento', font: { size: 10 } },
+      { cell: 'B5', value: companyAddressRes?.data.value || 'Dirección de Documento', font: { size: 10 } },
+      { cell: 'B6', value: companyPhoneRes?.data.value || 'Teléfono de Documento', font: { size: 10 } },
+      { cell: 'B7', value: companyEmailRes?.data.value || 'Email de Documento', font: { size: 10 } },
     ];
 
     headerInfo.forEach(({ cell, value, font }) => {
-      if (cell.startsWith("B")) worksheet.mergeCells(`${cell}:C${cell.charAt(1)}`);
-      if (cell.startsWith("D")) worksheet.mergeCells(`${cell}:F${cell.charAt(1)}`);
+      worksheet.mergeCells(`${cell}:F${cell.charAt(1)}`);
       const wsCell = worksheet.getCell(cell);
       wsCell.value = value;
       wsCell.font = font;
       wsCell.alignment = { vertical: 'middle', horizontal: 'center' };
-      wsCell.border = {
-        top: { style: 'thin' },
-        left: { style: 'thin' },
-        bottom: { style: 'thin' },
-        right: { style: 'thin' },
-      };
     });
 
     // Set up amortization table
@@ -947,6 +935,8 @@ const Solicitudes: FC = () => {
     worksheet.getRow(tableStartRow).alignment = { vertical: 'middle', horizontal: 'center' };
     //borders
     worksheet.getRow(tableStartRow).eachCell((cell) => {
+      //skip first cell
+      if (cell.col == "1") return
       cell.border = {
         top: { style: 'thin' },
         left: { style: 'thin' },

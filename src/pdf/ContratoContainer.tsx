@@ -96,7 +96,7 @@ const ContratoContainer = ({ id }: { id: string }) => {
                 creditType={(creditInfo?.creditType as CreditType) || CreditType.FINANCING}
                 signatureUrl={signatureUrl}
                 creditAmount={creditInfo?.requestedAmount || 0}
-                creditPaumentAmount={calcularPago(creditInfo?.interestRate / 100, financingInfo?.vehiclePrice || 0,
+                creditPaumentAmount={calcularPago(creditInfo?.interestRate / 100, creditInfo?.requestedAmount || 0,
                     financingInfo?.downPayment || 0,
                     creditInfo?.yearsOfPayment * parseInt(creditInfo?.period), parseInt(creditInfo.period))}
                 creditPeriod={creditInfo?.period || 0}

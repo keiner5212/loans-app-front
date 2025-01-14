@@ -29,7 +29,7 @@ const Desembolse: FunctionComponent<DesembolseProps> = () => {
             const fileSaved = await uploadFile(signature);
             if (fileSaved && id) {
                 const signaturePath = fileSaved.filePath;
-                // await SaveCreditContract(parseInt(id), signaturePath);
+                await SaveCreditContract(parseInt(id), signaturePath);
                 setModalData({
                     isOpen: true,
                     title: "Contrato Firmado",

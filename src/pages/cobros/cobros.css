@@ -28,9 +28,17 @@
     padding: 15px;
     border: 1px solid #ddd;
     border-radius: 5px;
+    background-color: #fff;
+    color: #000;
+
+    &.dark {
+        background-color: #ffffffbb;
+        border: 1px solid #3f649ef4;
+        color: #3f649ef4;
+    }
 }
 
-.payment-form{
+.payment-form {
     display: flex;
     flex-direction: column;
     gap: 10px;
@@ -52,7 +60,7 @@
     }
 }
 
-.payment-container{
+.payment-container {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -60,7 +68,7 @@
     width: 100%;
     color: #000;
 
-    &.dark{
+    &.dark {
         color: #fff;
     }
 }

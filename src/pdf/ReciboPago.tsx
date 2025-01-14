@@ -4,6 +4,7 @@ import { Document, Page, StyleSheet, Text, View, Image, Font } from "@react-pdf/
 import { FunctionComponent } from "react";
 import arialNarrowFont from "@/assets/fonts/arial-narrow-7-font/arial-narrow.ttf"
 import arialNarrow7BoldFont from "@/assets/fonts/arial-narrow-7-font/ArialNarrow7-9YJ9n.ttf"
+import { formatToCurrency } from "@/utils/formats/NumberFormats";
 
 Font.register({
     family: 'ArialNarrow',
@@ -110,7 +111,10 @@ interface ReciboPagoProps {
     LeftDebt: number;
     Credittype: CreditType;
     FinancingVehicle: string;
-    PeriodPayment: number;
+    PeriodPayment: {
+        amortization: number;
+        interest: number;
+    };
     LateInterest: number;
     TotalPayment: number;
 }
@@ -218,8 +222,8 @@ const ReciboPago: FunctionComponent<ReciboPagoProps> = ({
 
                         </View>
                         <View style={styles.row}>
-                            <Text style={styles.cell}><Text style={styles.bold}>Deuda Total:</Text> ${TotalDebt}</Text>
-                            <Text style={styles.cellLast}><Text style={styles.bold}>Deuda Restante:</Text> ${LeftDebt}</Text>
+                            <Text style={styles.cell}><Text style={styles.bold}>Deuda Total:</Text> ${formatToCurrency(TotalDebt)}</Text>
+                            <Text style={styles.cellLast}><Text style={styles.bold}>Deuda Restante:</Text> ${formatToCurrency(LeftDebt)}</Text>
                         </View>
                     </View>
                 </View>
@@ -230,15 +234,16 @@ const ReciboPago: FunctionComponent<ReciboPagoProps> = ({
                     <View style={styles.table}>
                         <View style={styles.row}>
                             <Text style={styles.cell}><Text style={styles.bold}>Pago del Periodo:</Text></Text>
-                            <Text style={styles.cellLast}>${PeriodPayment}</Text>
+                            <Text style={styles.cellLast}>${formatToCurrency(PeriodPayment.amortization + PeriodPayment.interest)}</Text>
                         </View>
                         <View style={styles.row}>
-                            <Text style={styles.cell}><Text style={styles.bold}>Intereses por Retraso:</Text></Text>
-                            <Text style={styles.cellLast}>${LateInterest}</Text>
+                            <Text style={styles.cell}><Text style={styles.bold}>Intereses por Retraso:</Text> ${formatToCurrency(LateInterest)}</Text>
+                            <Text style={styles.cell}><Text style={styles.bold}>Interes cuota:</Text> ${formatToCurrency(PeriodPayment.interest)}</Text>
+                            <Text style={styles.cellLast}><Text style={styles.bold}>Amortizacion cuota:</Text> ${formatToCurrency(PeriodPayment.amortization)}</Text>
                         </View>
                         <View style={styles.row}>
                             <Text style={styles.cell}><Text style={styles.bold}>Periodo No.:</Text> {PeriodNumber}</Text>
-                            <Text style={styles.cellLast}><Text style={styles.bold}>Total a Pagar:</Text> ${TotalPayment}</Text>
+                            <Text style={styles.cellLast}><Text style={styles.bold}>Total a Pagar:</Text> ${formatToCurrency(TotalPayment)}</Text>
                         </View>
                     </View>
                 </View>

@@ -20,7 +20,7 @@ Font.register({
 
 const styles = StyleSheet.create({
     page: {
-        padding: 20,
+        padding: 30,
         fontSize: 12,
         fontFamily: 'ArialNarrow',
     },
@@ -47,26 +47,6 @@ const styles = StyleSheet.create({
     },
     section: {
         marginBottom: 15,
-    },
-    table: {
-        display: "flex",
-        flexDirection: "column",
-        marginBottom: 10,
-    },
-    row: {
-        flexDirection: "row",
-    },
-    cell: {
-        flex: 1,
-        padding: 5,
-        borderWidth: 1,
-        borderColor: "black",
-    },
-    cellLast: {
-        flex: 1,
-        padding: 5,
-        borderWidth: 1,
-        borderColor: "black",
     },
     bold: {
         fontWeight: "bold",
@@ -99,6 +79,15 @@ const styles = StyleSheet.create({
         display: "flex",
         gap: 7,
         flexDirection: "column",
+    },
+    centeredHorizontal: {
+        display: "flex",
+        gap: 7,
+        flexDirection: "column",
+        alignItems: "center"
+    },
+    textCentered: {
+        textAlign: "center",
     }
 });
 
@@ -168,18 +157,12 @@ const Contrato: FunctionComponent<ContratoProps> = ({ signatureUrl, CompanyLogoU
 
                 {/* Company and Payment Info */}
                 <View style={styles.section}>
-                    <View style={styles.table}>
-                        <View style={styles.row}>
-                            <Text style={styles.cell}><Text style={styles.bold}>Empresa:</Text> {CompanyName}</Text>
-                            <Text style={styles.cell}><Text style={styles.bold}>RTN:</Text> {CompanyRegistration}</Text>
-                            <Text style={styles.cell}><Text style={styles.bold}>Dia:</Text> {day}</Text>
-                            <Text style={styles.cell}><Text style={styles.bold}>Mes:</Text> {month}</Text>
-                            <Text style={styles.cellLast}><Text style={styles.bold}>Año:</Text> {year}</Text>
+                    <View style={styles.centeredHorizontal}>
+                        <View style={styles.textVertical}>
+                            <Text style={styles.textCentered}><Text style={styles.bold}>{CompanyName}</Text> | {CompanyRegistration} | {day}/{month}/{year}</Text>
                         </View>
-                        <View style={styles.row}>
-                            <Text style={styles.cell}><Text style={styles.bold}>Dirección:</Text> {CompanyAddress}</Text>
-                            <Text style={styles.cell}><Text style={styles.bold}>Correo:</Text> {CompanyEmail}</Text>
-                            <Text style={styles.cellLast}><Text style={styles.bold}>Teléfono:</Text> {CompanyPhone}</Text>
+                        <View>
+                            <Text>{CompanyAddress} | {CompanyPhone} | {CompanyEmail}</Text>
                         </View>
                     </View>
                 </View>

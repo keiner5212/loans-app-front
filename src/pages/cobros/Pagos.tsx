@@ -21,6 +21,7 @@ import { Config } from "@/constants/config/Config";
 import { getUserById } from "@/api/user/userData";
 import { getFile } from "@/api/files/GetFiles";
 import { CreditType } from "@/constants/credits/Credit";
+import { obtenerDetallePeriodo } from "@/utils/amortizacion/Credit";
 
 export enum PaymentStatus {
     PENDING = "PENDING",
@@ -188,6 +189,17 @@ const Pago: FunctionComponent<PagoProps> = () => {
             const companyEmailRes = await getConfig(Config.COMPANY_EMAIL);
             const eMployeeDataRes = await getUserById(Number(emplooyeId));
             const clientDataRes = await getUserById(Number(credit["userId"]));
+            const {
+                amortization,
+                interest
+            } = obtenerDetallePeriodo(
+                credit.interestRate / 100,
+                credit.requestedAmount,
+                financing?.downPayment ? financing.downPayment : 0,
+                credit.yearsOfPayment * credit.period,
+                credit.period,
+                payment["period"]
+            )
             setLoadingRequest(false);
             const pdfBlob = await pdf(
                 <ReciboPago
@@ -211,7 +223,12 @@ const Pago: FunctionComponent<PagoProps> = () => {
                     LateInterest={parseFloat(lateAmount)}
                     LeftDebt={parseFloat((parseFloat(credit["requestedAmount"].toString()) - (parseFloat(periodPayment) * payment["period"])).toFixed(2))}
                     PeriodNumber={payment["period"]}
-                    PeriodPayment={parseFloat(periodPayment)}
+                    PeriodPayment={
+                        {
+                            amortization: amortization,
+                            interest: interest
+                        }
+                    }
                     TotalDebt={credit["requestedAmount"]}
                     PaymentDate={new Date(payment["paymentDate"])}
                     TotalPayment={parseFloat(periodPayment) + parseFloat(lateAmount)}

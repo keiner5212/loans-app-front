@@ -358,6 +358,19 @@ const Cobros: FC = () => {
       const companyEmailRes = await getConfig(Config.COMPANY_EMAIL);
       const eMployeeDataRes = await getUserById(Number(emplooyeId));
       const clientDataRes = await getUserById(Number(credit["userId"]));
+      console.log(financing);
+      const {
+        amortization,
+        interest
+      } = obtenerDetallePeriodo(
+        credit.interestRate / 100,
+        credit.requestedAmount,
+        financing?.downPayment ? financing.downPayment : 0,
+        credit.yearsOfPayment * credit.period,
+        credit.period,
+        payment["period"]
+      )
+      console.log(amortization, interest)
       setLoadingRequest(false);
       const pdfBlob = await pdf(
         <ReciboPago
@@ -381,7 +394,12 @@ const Cobros: FC = () => {
           LateInterest={parseFloat(lateAmount)}
           LeftDebt={parseFloat((parseFloat(credit["requestedAmount"].toString()) - (parseFloat(periodPayment) * payment["period"])).toFixed(2))}
           PeriodNumber={payment["period"]}
-          PeriodPayment={parseFloat(periodPayment)}
+          PeriodPayment={
+            {
+              amortization: amortization,
+              interest: interest
+            }
+          }
           TotalDebt={credit["requestedAmount"]}
           PaymentDate={new Date(payment["paymentDate"])}
           TotalPayment={parseFloat(periodPayment) + parseFloat(lateAmount)}
@@ -695,13 +713,13 @@ const Cobros: FC = () => {
               </TableContextProvider>
             </> :
             <ul className="solicitudes-list">
-              <li className="solicitud-item">
+              <li className={"solicitud-item" + " " + theme}>
                 <p>Este credito no tiene pagos</p>
               </li></ul>
           }
           </> :
           <ul className="solicitudes-list">
-            <li className="solicitud-item">
+            <li className={"solicitud-item" + " " + theme}>
               <p>Busca un usuario y selecciona un credito para ver los pagos</p>
             </li>
           </ul>

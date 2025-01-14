@@ -20,6 +20,7 @@ import LoaderModal from "@/components/modal/Loader/LoaderModal";
 import { deleteFile } from "@/api/files/DeleteFiles";
 import { CreateCredit, CreateFinancing } from "@/api/credit/CreateCredit";
 import { CreditType, Status } from "@/constants/credits/Credit";
+import noImage from "@/assets/images/noImage.jpg";
 import { FilterPortal } from "./FilterPortal";
 import { GetCredit, GetCredits } from "@/api/credit/GetCredits";
 import { formatUtcToLocal } from "@/utils/formats/Dates";
@@ -851,7 +852,7 @@ const Solicitudes: FC = () => {
       ]);
 
     // Set up logo
-    let logoUrl = "https://th.bing.com/th/id/OIP.LmjRjBonaZtB0o-oo3CuNgAAAA?w=350&h=247&rs=1&pid=ImgDetMain";
+    let logoUrl = noImage;
     if (logoRes) {
       const fileResponse = await getFile(logoRes.data.value);
       logoUrl = URL.createObjectURL(fileResponse);
@@ -893,19 +894,6 @@ const Solicitudes: FC = () => {
     worksheet.getCell('D2').value = "Tabla de Amortización (Anexo 1)";
     //estilo de la celda
     worksheet.getCell('D2').font = { bold: true, size: 16 };
-    //bordes
-    worksheet.getCell('B2').border = {
-      top: { style: 'thin' },
-      left: { style: 'thin' },
-      bottom: { style: 'thin' },
-      right: { style: 'thin' },
-    }
-    worksheet.getCell('D2').border = {
-      top: { style: 'thin' },
-      left: { style: 'thin' },
-      bottom: { style: 'thin' },
-      right: { style: 'thin' },
-    }
     //alineacion
     worksheet.getCell('B2').alignment = { vertical: 'middle', horizontal: 'center' };
     worksheet.getCell('D2').alignment = { vertical: 'middle', horizontal: 'center' };

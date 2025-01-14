@@ -188,8 +188,6 @@ const Cobros: FC = () => {
       // filter search
       if (paymentsSearch !== "") {
         filteredPayments = filteredPayments.filter((payment: any) => {
-          console.log(JSON.stringify(payment).toLowerCase());
-          console.log(paymentsSearch.toLowerCase());
           return JSON.stringify(payment).toLowerCase().includes(paymentsSearch.toLowerCase())
         }
         );
@@ -358,7 +356,6 @@ const Cobros: FC = () => {
       const companyEmailRes = await getConfig(Config.COMPANY_EMAIL);
       const eMployeeDataRes = await getUserById(Number(emplooyeId));
       const clientDataRes = await getUserById(Number(credit["userId"]));
-      console.log(financing);
       const {
         amortization,
         interest
@@ -370,7 +367,6 @@ const Cobros: FC = () => {
         credit.period,
         payment["period"]
       )
-      console.log(amortization, interest)
       setLoadingRequest(false);
       const pdfBlob = await pdf(
         <ReciboPago

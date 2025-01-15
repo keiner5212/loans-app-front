@@ -75,6 +75,7 @@ export const obtenerDetallePeriodo = (
     CreditPeriod: number,
     periodoEspecifico: number
 ) => {
+    console.log("Alldata: ", tasaInteres, deuda, pagoInicial, periodos, CreditPeriod, periodoEspecifico);
     const tasaPeriodo = convertMonthlyRate(tasaInteres, CreditPeriod); // Convertir tasa mensual a la tasa específica
     const deudaRestante = deuda - pagoInicial; // Deuda después del pago inicial
     const pagoPeriodo = (deudaRestante * tasaPeriodo * Math.pow(1 + tasaPeriodo, periodos)) / (Math.pow(1 + tasaPeriodo, periodos) - 1); // Calcular pago mensual

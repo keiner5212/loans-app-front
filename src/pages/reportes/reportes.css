@@ -33,3 +33,26 @@ h4 {
   background-color: #d1e7dd; 
   border: 1px solid #0f3151;
 }
+
+
+.report-result{
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  & button{
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    align-items: center;
+    &:first-child{
+      background-color: #3ac94d;
+      color: #fff;
+    };
+    &:last-child{
+      background-color: #e73434;
+      color: #fff;
+    };
+  }
+}

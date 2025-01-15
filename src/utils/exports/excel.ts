@@ -121,7 +121,7 @@ const generateExcel = async (
         { key: '', width: 5 },
         ...headers.map((header) => ({
             key: header,
-            width: 20
+            width: 30
         }))
     ];
 

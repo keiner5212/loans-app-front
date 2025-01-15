@@ -118,7 +118,7 @@ const TablePdf: FunctionComponent<TablePdfProps> = ({
 
     return (
         <Document>
-            <Page size={{ width: 8.5 * 72, height: 5.5 * 72 }} style={styles.page}>
+            <Page size={{ width: headers.length * 80, height: 5.5 * 80 }} style={styles.page}>
                 {/* Header */}
                 <View style={styles.header}>
                     <Image src={CompanyLogoURL} style={styles.logo} />

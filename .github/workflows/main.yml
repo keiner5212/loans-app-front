@@ -57,6 +57,10 @@ jobs:
       - name: Create Env File
         run: |
           echo "VITE_BACKEND_URL=${{ secrets.VITE_BACKEND_URL }}" >> .env
+          echo "VITE_CRYPTO_SECRET=${{ secrets.VITE_CRYPTO_SECRET }}" >> .env
+          echo "VITE_LOCALE=${{ secrets.VITE_LOCALE }}" >> .env
+          echo "VITE_TIMEZONE=${{ secrets.VITE_TIMEZONE }}" >> .env
+          echo "VITE_WHATSAPP_COUNTRY_CODE=${{ secrets.VITE_WHATSAPP_COUNTRY_CODE }}" >> .env
           echo ".env file created successfully"
 
       - uses: tauri-apps/tauri-action@v0

@@ -51,12 +51,14 @@ const Reportes: FC = () => {
 
   const generarReporteExcel = async () => {
     if (reportes) {
+      setLoadingRequest(true);
       await generateExcel(
         "Reporte_" + selectedTable + "_" + new Date().toLocaleDateString(),
         "Reporte de " + selectedTable,
         headers,
         reportes
       )
+      setLoadingRequest(false);
       setModalInfo({ title: "Éxito", message: "Reporte generado en formato Excel.", isOpen: true });
     } else {
       setModalInfo({ title: "Error", message: "Selecciona una solicitud antes de generar el reporte.", isOpen: true });
@@ -65,12 +67,14 @@ const Reportes: FC = () => {
 
   const generarReportePDF = async () => {
     if (reportes) {
+      setLoadingRequest(true);
       await generatePDF(
         "Reporte_" + selectedTable + "_" + new Date().toLocaleDateString(),
         "Reporte de " + selectedTable,
         headers,
         reportes
       )
+      setLoadingRequest(false);
       setModalInfo({ title: "Éxito", message: "Reporte generado en formato PDF.", isOpen: true });
     } else {
       setModalInfo({ title: "Error", message: "Selecciona una solicitud antes de generar el reporte.", isOpen: true });
@@ -79,8 +83,23 @@ const Reportes: FC = () => {
   const [headers, setHeaders] = useState<string[]>([]);
   const aplicarFiltros = async (e: FormEvent) => {
     e.preventDefault();
+    if (!fechaDesde && fechaHasta) {
+      setModalInfo({ title: "Error", message: "Selecciona una fecha de inicio.", isOpen: true });
+      setLoadingRequest(false);
+      return
+    }
+    if (!fechaHasta && fechaDesde) {
+      setModalInfo({ title: "Error", message: "Selecciona una fecha de fin.", isOpen: true });
+      setLoadingRequest(false);
+      return
+    }
     setLoadingRequest(true);
     const result = await getReportData();
+    if (result.data.length == 0) {
+      setModalInfo({ title: "Error", message: "No se encontraron resultados.", isOpen: true });
+      setLoadingRequest(false);
+      return
+    }
     let resultParsed = []
     setLoadingRequest(false);
     switch (selectedTable) {
@@ -222,7 +241,7 @@ const Reportes: FC = () => {
               </div>
               {specificUserPayments && (
                 <div>
-                  <select>
+                  <select value={search} onChange={(e) => setSearch(e.target.value)}>
                     {Object.keys(Status).map((key) => (
                       <option key={key}>{key}</option>
                     ))}

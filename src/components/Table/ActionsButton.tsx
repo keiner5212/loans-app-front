@@ -42,9 +42,15 @@ const ActionsButton: FunctionComponent<ActionsButtonProps> = ({
     const renderActionsList = () => {
         if (!actionsVisible || !rect) return null;
 
-        const actionsStyle: React.CSSProperties = {
+        const buttonHeight = 40;
+        const actionsHeight = actions.length * buttonHeight;
+
+        let topPosition = rect.bottom + 5;
+        let bottomPosition = window.innerHeight - rect.bottom;
+
+        let actionsStyle: React.CSSProperties = {
             position: "fixed",
-            top: rect.bottom + 5,
+            top: topPosition,
             left: rect.left + rect.width / 2,
             transform: "translateX(-50%)",
             backgroundColor: "transparent",
@@ -56,6 +62,14 @@ const ActionsButton: FunctionComponent<ActionsButtonProps> = ({
             minWidth: "150px",
             overflow: "hidden",
         };
+
+        if (actionsHeight + 10 > bottomPosition) {
+            actionsStyle.top = rect.top - actionsHeight - 10;  // Ajustar arriba si no cabe
+        }
+
+        if (topPosition + actionsHeight > window.innerHeight) {
+            actionsStyle.top = window.innerHeight - actionsHeight - 10;  // Ajuste para la parte inferior
+        }
 
         return createPortal(
             <div style={actionsStyle}>

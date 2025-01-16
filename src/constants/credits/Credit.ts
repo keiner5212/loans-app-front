@@ -1,22 +1,33 @@
 
 export enum Status {
     //pendiente
-    PENDING = "PENDING",
+    PENDING = "Pendiente",
     //aprobado
-    APPROVED = "APPROVED",
+    APPROVED = "Aprovado",
     //rechazado
-    REJECTED = "REJECTED",
+    REJECTED = "Rechazado",
     //desembolsado
-    RELEASED = "RELEASED",
+    RELEASED = "Desembolsado",
     //atrasado
-    LATE = "LATE",
+    LATE = "Atrasado",
     //terminado
-    FINISHED = "FINISHED",
+    FINISHED = "Terminado",
     //cancelado
-    CANCELED = "CANCELED",
+    CANCELED = "Cancelado",
 }
 
+export const StatusObjectValues: { [key: string]: string } = {
+    [Status.PENDING]: "Pendiente",
+    [Status.APPROVED]: "Aprovado",
+    [Status.REJECTED]: "Rechazado",
+    [Status.RELEASED]: "Desembolsado",
+    [Status.LATE]: "Atrasado",
+    [Status.FINISHED]: "Terminado",
+    [Status.CANCELED]: "Cancelado",
+}
+
+
 export enum CreditType {
-    CREDIT = "CREDIT",
-    FINANCING = "FINANCING",
+    CREDIT = "Credito",
+    FINANCING = "Financiamiento",
 }

@@ -7,7 +7,7 @@ import SimpleModal from "@/components/modal/simpleModal/ModalSimple";
 import CustomCheckbox from "@/components/check";
 import { useAppStore } from "@/store/appStore";
 import { getReport } from "@/api/reports/getReport";
-import { Status } from "@/constants/credits/Credit";
+import { Status, StatusObjectValues } from "@/constants/credits/Credit";
 import LoaderModal from "@/components/modal/Loader/LoaderModal";
 import { FaFilePdf } from "react-icons/fa";
 import { PiMicrosoftExcelLogo } from "react-icons/pi";
@@ -15,9 +15,10 @@ import generateExcel from "@/utils/exports/excel";
 import { generatePDF } from "@/utils/exports/pdf";
 import { obtenerDetallePeriodo } from "@/utils/amortizacion/Credit";
 import { PaymentStatus } from "../cobros/Pagos";
-import { calculateDaysDelay } from "@/utils/formats/Dates";
+import { calculateDaysDelay, formatUtcToLocal } from "@/utils/formats/Dates";
 import { getConfig } from "@/api/config/GetConfig";
 import { Config } from "@/constants/config/Config";
+import { CreditPeriod } from "@/utils/formats/Credits";
 
 const tablas = [
   "Creditos",
@@ -32,7 +33,7 @@ const Reportes: FC = () => {
   const [fechaDesde, setFechaDesde] = useState("");
   const [fechaHasta, setFechaHasta] = useState("");
   const [loadingRequest, setLoadingRequest] = useState(false);
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState<string | undefined>();
   const { theme } = useAppStore();
   const [selectedTable, setSelectedTable] = useState("Creditos");
   const [specificUserPayments, setSpecificUserPayments] = useState(false);
@@ -104,31 +105,172 @@ const Reportes: FC = () => {
     setLoadingRequest(false);
     switch (selectedTable) {
       case "Creditos":
-        setHeaders([...Object.keys(result.data[0].credit), "remainingDebt"])
+        setHeaders([
+          "ID",
+          "Nombre del Usuario",
+          "Documento del Usuario",
+          "Creador del Credito (ID)",
+          "Monto Solicitado",
+          "Tipo de Credito",
+          "Estado",
+          "Monto Amortizado",
+          "Monto Pendiente",
+          "Tasa de Interes",
+          "Periodidad",
+          "Interes Por Mora",
+          "Ultimo Pago",
+          "Fecha de Solicitud",
+          "Fecha de Aprobacion",
+          "Fecha de Desembolso",
+          "Fecha de Rechazo",
+          "Fecha de Finalizacion",
+          "Mensaje de Finalizacion",
+        ])
         resultParsed = result.data.map((creditres: any) => {
           return {
-            ...creditres.credit,
-            remainingDebt: parseFloat((creditres.credit.status == Status.CANCELED ? 0 : creditres.credit.requestedAmount - creditres.credit.approvedAmount).toFixed(2)),
-            userId: creditres.user.email
+            "ID": creditres.credit.id || " ",
+            "Nombre del Usuario": creditres.user.name || " ",
+            "Documento del Usuario": creditres.user.document || " ",
+            "Creador del Credito (ID)": creditres.credit.userCreatorId || " ",
+            "Monto Solicitado": creditres.credit.requestedAmount || " ",
+            "Tipo de Credito": creditres.credit.creditType || " ",
+            "Estado": creditres.credit.status || " ",
+            "Monto Amortizado": creditres.credit.approvedAmount || " ",
+            "Monto Pendiente": parseFloat((creditres.credit.status == Status.CANCELED ? 0 : creditres.credit.requestedAmount - creditres.credit.approvedAmount).toFixed(2)) || " ",
+            "Tasa de Interes": creditres.credit.interestRate || " ",
+            "Periodidad": creditres.credit.period == CreditPeriod.SEMANAL ? "Semanal" : creditres.credit.period == CreditPeriod.MENSUAL ? "Mensual" : "Quincenal",
+            "Interes Por Mora": creditres.credit.lateInterest || " ",
+            "Plazo (años)": creditres.credit.yearsOfPayment || " ",
+            "Fecha de Solicitud": formatUtcToLocal(
+              creditres.credit.applicationDate,
+              import.meta.env.VITE_LOCALE,
+              import.meta.env.VITE_TIMEZONE
+            ) || " ",
+            "Fecha de Aprobacion": formatUtcToLocal(
+              creditres.credit.aprovedDate,
+              import.meta.env.VITE_LOCALE,
+              import.meta.env.VITE_TIMEZONE
+            ) || " ",
+            "Fecha de Desembolso": formatUtcToLocal(
+              creditres.credit.releasedDate,
+              import.meta.env.VITE_LOCALE,
+              import.meta.env.VITE_TIMEZONE
+            ) || " ",
+            "Fecha de Rechazo": formatUtcToLocal(
+              creditres.credit.rejectedDate,
+              import.meta.env.VITE_LOCALE,
+              import.meta.env.VITE_TIMEZONE
+            ) || " ",
+            "Fecha de Finalizacion": formatUtcToLocal(
+              creditres.credit.finishedDate,
+              import.meta.env.VITE_LOCALE,
+              import.meta.env.VITE_TIMEZONE
+            ) || " ",
+            "Mensaje de Finalizacion": creditres.credit.finishedMessage || " ",
+            "Ultimo Pago": formatUtcToLocal(
+              creditres.credit.lastPaymentDate,
+              import.meta.env.VITE_LOCALE,
+              import.meta.env.VITE_TIMEZONE
+            ) || " ",
           }
         })
         break;
       case "Financiamientos":
-        setHeaders([...Object.keys(result.data[0].credit), "remainingDebt", "vehicleVIN", "vehiclePlate", "vehicleDescription", "downPayment"])
+        setHeaders([
+          "ID",
+          "Nombre del Usuario",
+          "Documento del Usuario",
+          "Creador del Credito (ID)",
+          "Monto Solicitado",
+          "Tipo de Credito",
+          "Estado",
+          "Monto Amortizado",
+          "Monto Pendiente",
+          "Tasa de Interes",
+          "Periodidad",
+          "Interes Por Mora",
+          "Ultimo Pago",
+          "VIN del Vehiculo",
+          "Placa del Vehiculo",
+          "Descripcion del Vehiculo",
+          "Monto de Abono",
+          "Fecha de Solicitud",
+          "Fecha de Aprobacion",
+          "Fecha de Desembolso",
+          "Fecha de Rechazo",
+          "Fecha de Finalizacion",
+          "Mensaje de Finalizacion",
+        ])
         resultParsed = result.data.map((creditres: any) => {
           return {
-            ...creditres.credit,
-            remainingDebt: parseFloat((creditres.credit.status == Status.CANCELED ? 0 : creditres.credit.requestedAmount - creditres.credit.approvedAmount).toFixed(2)),
-            userId: creditres.user.email,
-            vehicleVIN: creditres.financing.vehicleVIN,
-            vehiclePlate: creditres.financing.vehiclePlate,
-            vehicleDescription: creditres.financing.vehicleDescription,
-            downPayment: creditres.financing.downPayment
+            "ID": creditres.credit.id || " ",
+            "Nombre del Usuario": creditres.user.name || " ",
+            "Documento del Usuario": creditres.user.document || " ",
+            "Creador del Credito (ID)": creditres.credit.userCreatorId || " ",
+            "Monto Solicitado": creditres.credit.requestedAmount || " ",
+            "Tipo de Credito": creditres.credit.creditType || " ",
+            "Estado": creditres.credit.status || " ",
+            "Monto Amortizado": creditres.credit.approvedAmount || " ",
+            "Monto Pendiente": parseFloat((creditres.credit.status == Status.CANCELED ? 0 : creditres.credit.requestedAmount - creditres.credit.approvedAmount).toFixed(2)) || " ",
+            "Tasa de Interes": creditres.credit.interestRate || " ",
+            "Periodidad": creditres.credit.period == CreditPeriod.SEMANAL ? "Semanal" : creditres.credit.period == CreditPeriod.MENSUAL ? "Mensual" : "Quincenal",
+            "Interes Por Mora": creditres.credit.lateInterest || " ",
+            "Plazo (años)": creditres.credit.yearsOfPayment || " ",
+            "Fecha de Solicitud": formatUtcToLocal(
+              creditres.credit.applicationDate,
+              import.meta.env.VITE_LOCALE,
+              import.meta.env.VITE_TIMEZONE
+            ) || " ",
+            "Fecha de Aprobacion": formatUtcToLocal(
+              creditres.credit.aprovedDate,
+              import.meta.env.VITE_LOCALE,
+              import.meta.env.VITE_TIMEZONE
+            ) || " ",
+            "Fecha de Desembolso": formatUtcToLocal(
+              creditres.credit.releasedDate,
+              import.meta.env.VITE_LOCALE,
+              import.meta.env.VITE_TIMEZONE
+            ) || " ",
+            "Fecha de Rechazo": formatUtcToLocal(
+              creditres.credit.rejectedDate,
+              import.meta.env.VITE_LOCALE,
+              import.meta.env.VITE_TIMEZONE
+            ) || " ",
+            "Fecha de Finalizacion": formatUtcToLocal(
+              creditres.credit.finishedDate,
+              import.meta.env.VITE_LOCALE,
+              import.meta.env.VITE_TIMEZONE
+            ) || " ",
+            "Mensaje de Finalizacion": creditres.credit.finishedMessage || " ",
+            "Ultimo Pago": formatUtcToLocal(
+              creditres.credit.lastPaymentDate,
+              import.meta.env.VITE_LOCALE,
+              import.meta.env.VITE_TIMEZONE
+            ) || " ",
+            "VIN del Vehiculo": creditres.financing.vehicleVIN || " ",
+            "Placa del Vehiculo": creditres.financing.vehiclePlate || " ",
+            "Descripcion del Vehiculo": creditres.financing.vehicleDescription || " ",
+            "Monto de Abono": creditres.financing.downPayment || " "
           }
         })
         break;
       case "Pagos":
-        setHeaders([...Object.keys(result.data[0].payment), "amortization", "interest", "lateDays", "lateInterest"])
+        setHeaders([
+          "ID",
+          "Nombre del Usuario",
+          "Documento del Usuario",
+          "Creador del Pago (ID)",
+          "Tipo de Credito",
+          "Valor del Pago",
+          "Fecha de Pago",
+          "Estado",
+          "Periodo de Pago",
+          "Pago Oportuno",
+          "Amortizacion",
+          "Interes",
+          "Dias de Mora",
+          "Interes de Mora"
+        ])
         const dailyInerestDelay = await getConfig(Config.DAILY_INTEREST_DELAY);
         resultParsed = result.data.map((paymentRes: any) => {
           const {
@@ -147,29 +289,134 @@ const Reportes: FC = () => {
           const lateAmount = (lateDays * (parseFloat(dailyInerestDelay?.data.value || "0") * paymentRes.payment.amount)).toFixed(2)
 
           return {
-            ...paymentRes.payment,
-            amortization: amortization.toFixed(2),
-            interest: interest.toFixed(2),
-            lateDays: lateDays,
-            lateInterest: lateAmount
+            "ID": paymentRes.payment.id || " ",
+            "Nombre del Usuario": paymentRes.user.name || " ",
+            "Documento del Usuario": paymentRes.user.document || " ",
+            "Creador del Pago (ID)": paymentRes.payment.creatorId || " ",
+            "Tipo de Credito": paymentRes.credit.creditType || " ",
+            "Valor del Pago": paymentRes.payment.amount || " ",
+            "Fecha de Pago": formatUtcToLocal(
+              paymentRes.payment.paymentDate,
+              import.meta.env.VITE_LOCALE,
+              import.meta.env.VITE_TIMEZONE
+            ) || " ",
+            "Estado": paymentRes.payment.status || " ",
+            "Periodo de Pago": paymentRes.credit.period == CreditPeriod.SEMANAL ? "Semanal" : paymentRes.credit.period == CreditPeriod.MENSUAL ? "Mensual" : "Quincenal",
+            "Pago Oportuno": paymentRes.payment.timelyPayment || " ",
+            "Amortizacion": amortization.toFixed(2) || " ",
+            "Interes": interest.toFixed(2) || " ",
+            "Dias de Mora": lateDays || " ",
+            "Interes de Mora": lateAmount || " "
           }
         })
         break;
       case "Usuarios":
-        setHeaders(Object.keys(result.data[0]).filter((key) => key !== "password"))
-        resultParsed = result.data
+        setHeaders([
+          "ID",
+          "Nombre",
+          "Edad",
+          "Correo Electronico",
+          "Tipo de Documento",
+          "Documento",
+          "Telefono",
+          "Rol",
+          "Fecha de Creacion"
+        ])
+        resultParsed = result.data.map((userRes: any) => {
+          return {
+            "ID": userRes.user.id || " ",
+            "Nombre": userRes.user.name || " ",
+            "Edad": userRes.user.age || " ",
+            "Correo Electronico": userRes.user.email || " ",
+            "Tipo de Documento": userRes.user.document_type || " ",
+            "Documento": userRes.user.document || " ",
+            "Telefono": userRes.user.phone || " ",
+            "Rol": userRes.user.role || " ",
+            "Fecha de Creacion": formatUtcToLocal(
+              userRes.user.createdAt,
+              import.meta.env.VITE_LOCALE,
+              import.meta.env.VITE_TIMEZONE
+            ) || " "
+          }
+        })
         break;
       case "Creditos y Financiamientos":
-        setHeaders([...Object.keys(result.data[0].credit), "remainingDebt", "vehicleVIN", "vehiclePlate", "vehicleDescription", "downPayment"])
+        setHeaders([
+          "ID",
+          "Nombre del Usuario",
+          "Documento del Usuario",
+          "Creador del Credito (ID)",
+          "Monto Solicitado",
+          "Tipo de Credito",
+          "Estado",
+          "Monto Amortizado",
+          "Monto Pendiente",
+          "Tasa de Interes",
+          "Periodidad",
+          "Interes Por Mora",
+          "Ultimo Pago",
+          "VIN del Vehiculo",
+          "Placa del Vehiculo",
+          "Descripcion del Vehiculo",
+          "Monto de Abono",
+          "Fecha de Solicitud",
+          "Fecha de Aprobacion",
+          "Fecha de Desembolso",
+          "Fecha de Rechazo",
+          "Fecha de Finalizacion",
+          "Mensaje de Finalizacion",
+        ])
+
         resultParsed = result.data.map((creditres: any) => {
           return {
-            ...creditres.credit,
-            remainingDebt: parseFloat((creditres.credit.status == Status.CANCELED ? 0 : creditres.credit.requestedAmount - creditres.credit.approvedAmount).toFixed(2)),
-            userId: creditres.user.email,
-            vehicleVIN: creditres.financing?.vehicleVIN,
-            vehiclePlate: creditres.financing?.vehiclePlate,
-            vehicleDescription: creditres.financing?.vehicleDescription,
-            downPayment: creditres.financing?.downPayment
+            "ID": creditres.credit.id || " ",
+            "Nombre del Usuario": creditres.user.name || " ",
+            "Documento del Usuario": creditres.user.document || " ",
+            "Creador del Credito (ID)": creditres.credit.userCreatorId || " ",
+            "Monto Solicitado": creditres.credit.requestedAmount || " ",
+            "Tipo de Credito": creditres.credit.creditType || " ",
+            "Estado": creditres.credit.status || " ",
+            "Monto Amortizado": creditres.credit.approvedAmount || " ",
+            "Monto Pendiente": parseFloat((creditres.credit.status == Status.CANCELED ? 0 : creditres.credit.requestedAmount - creditres.credit.approvedAmount).toFixed(2)) || " ",
+            "Tasa de Interes": creditres.credit.interestRate || " ",
+            "Periodidad": creditres.credit.period == CreditPeriod.SEMANAL ? "Semanal" : creditres.credit.period == CreditPeriod.MENSUAL ? "Mensual" : "Quincenal",
+            "Interes Por Mora": creditres.credit.lateInterest || " ",
+            "Plazo (años)": creditres.credit.yearsOfPayment || " ",
+            "Fecha de Solicitud": formatUtcToLocal(
+              creditres.credit.applicationDate,
+              import.meta.env.VITE_LOCALE,
+              import.meta.env.VITE_TIMEZONE
+            ) || " ",
+            "Fecha de Aprobacion": formatUtcToLocal(
+              creditres.credit.aprovedDate,
+              import.meta.env.VITE_LOCALE,
+              import.meta.env.VITE_TIMEZONE
+            ) || " ",
+            "Fecha de Desembolso": formatUtcToLocal(
+              creditres.credit.releasedDate,
+              import.meta.env.VITE_LOCALE,
+              import.meta.env.VITE_TIMEZONE
+            ) || " ",
+            "Fecha de Rechazo": formatUtcToLocal(
+              creditres.credit.rejectedDate,
+              import.meta.env.VITE_LOCALE,
+              import.meta.env.VITE_TIMEZONE
+            ) || " ",
+            "Fecha de Finalizacion": formatUtcToLocal(
+              creditres.credit.finishedDate,
+              import.meta.env.VITE_LOCALE,
+              import.meta.env.VITE_TIMEZONE
+            ) || " ",
+            "Mensaje de Finalizacion": creditres.credit.finishedMessage || " ",
+            "Ultimo Pago": formatUtcToLocal(
+              creditres.credit.lastPaymentDate,
+              import.meta.env.VITE_LOCALE,
+              import.meta.env.VITE_TIMEZONE
+            ) || " ",
+            "VIN del Vehiculo": creditres.financing?.vehicleVIN || " ",
+            "Placa del Vehiculo": creditres.financing?.vehiclePlate || " ",
+            "Descripcion del Vehiculo": creditres.financing?.vehicleDescription || " ",
+            "Monto de Abono": creditres.financing?.downPayment || " "
           }
         })
         break;
@@ -235,14 +482,17 @@ const Reportes: FC = () => {
               <div>
                 <CustomCheckbox
                   label="Filtrar por estado de credito"
-                  onChange={(checked) => setSpecificUserPayments(checked)}
+                  onChange={(checked) => {
+                    setSearch(undefined); setSpecificUserPayments(checked)
+                  }}
                   value={specificUserPayments}
                 />
               </div>
               {specificUserPayments && (
                 <div>
                   <select value={search} onChange={(e) => setSearch(e.target.value)}>
-                    {Object.keys(Status).map((key) => (
+                    <option value={undefined}>Todos</option>
+                    {Object.values(StatusObjectValues).map((key) => (
                       <option key={key}>{key}</option>
                     ))}
                   </select>
@@ -255,7 +505,9 @@ const Reportes: FC = () => {
               <div>
                 <CustomCheckbox
                   label="Pagos de usuario especifico"
-                  onChange={(checked) => setSpecificUserPayments(checked)}
+                  onChange={(checked) => {
+                    setSearch(undefined); setSpecificUserPayments(checked)
+                  }}
                   value={specificUserPayments}
                 />
               </div>

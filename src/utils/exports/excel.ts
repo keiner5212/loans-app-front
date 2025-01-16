@@ -5,6 +5,7 @@ import noImage from "@/assets/images/noImage.jpg";
 import { getConfig } from '@/api/config/GetConfig';
 import { Config } from '@/constants/config/Config';
 import { getFile } from '@/api/files/GetFiles';
+import { Status } from '@/constants/credits/Credit';
 
 interface DataRow {
     [key: string]: string | number;
@@ -103,7 +104,7 @@ const generateExcel = async (
     const tableStartRow = 9;
 
     worksheet.getRow(tableStartRow).values = ["", ...headers];
-    worksheet.getRow(tableStartRow).font = { bold: true, size: 14 };
+    worksheet.getRow(tableStartRow).font = { bold: true, size: 12 };
     worksheet.getRow(tableStartRow).alignment = { vertical: 'middle', horizontal: 'center' };
 
     worksheet.getRow(tableStartRow).eachCell((cell) => {
@@ -119,13 +120,44 @@ const generateExcel = async (
 
     worksheet.columns = [
         { key: '', width: 5 },
-        ...headers.map((header) => ({
-            key: header,
-            width: 30
-        }))
+        ...headers.map((header) => {
+            let temp = {
+                key: header,
+                width: 25
+            }
+            if (header == "ID") {
+                temp = {
+                    key: header,
+                    width: 10
+                }
+            }
+            if (header == "Documento del Usuario") {
+                temp = {
+                    key: header,
+                    width: 32
+                }
+            }
+            if (header.toString().startsWith("Fecha")) {
+                temp = {
+                    key: header,
+                    width: 35
+                }
+            }
+            return temp
+        })
     ];
 
+    const stateColors: { [key: string]: string } = {
+        [Status.LATE]: 'ff5c64',
+        [Status.CANCELED]: 'ff8800',
+        [Status.RELEASED]: '00ffd5',
+        [Status.PENDING]: '34fe56',
+        [Status.APPROVED]: '2c1ef1',
+        [Status.REJECTED]: 'fbff1a',
+        [Status.FINISHED]: 'c52afe',
+    };
     // add data
+    let backgroundWasModified = false
 
     // Add amortization data
     data.forEach((x) => {
@@ -142,7 +174,59 @@ const generateExcel = async (
                 right: { style: 'thin' },
             };
         });
+
+        const estado = x["Estado"];
+        if (Object.values(Status).includes(estado as Status)) {
+            row.getCell(headers.indexOf("Estado") + 2).fill = {
+                type: 'pattern',
+                pattern: 'solid',
+                fgColor: { argb: stateColors[estado] },
+            };
+            backgroundWasModified = true;
+        }
     });
+
+    if (backgroundWasModified) {
+        const actualRow = tableStartRow + data.length + 5
+        // leyend of colors
+        worksheet.mergeCells(`C${actualRow}:D${actualRow}`);
+        worksheet.getCell(`C${actualRow}`).value = "Leyenda de Colores";
+        worksheet.getRow(actualRow).font = { bold: true, size: 12 };
+        worksheet.getRow(actualRow).alignment = { vertical: 'middle', horizontal: 'center' };
+        worksheet.getRow(actualRow).eachCell((cell) => {
+            //skip first cell
+            if (cell.col == "1") return
+            cell.border = {
+                top: { style: 'thin' },
+                left: { style: 'thin' },
+                bottom: { style: 'thin' },
+                right: { style: 'thin' },
+            }
+        })
+
+        for (const [key, value] of Object.entries(stateColors)) {
+            const row = worksheet.addRow({
+                "": "",
+                "": "",
+                [headers[1]]: key,
+                [headers[2]]: value
+            });
+            row.alignment = { vertical: 'middle', horizontal: 'center' };
+            row.eachCell((cell) => {
+                cell.border = {
+                    top: { style: 'thin' },
+                    left: { style: 'thin' },
+                    bottom: { style: 'thin' },
+                    right: { style: 'thin' },
+                };
+            });
+            row.getCell(4).fill = {
+                type: 'pattern',
+                pattern: 'solid',
+                fgColor: { argb: value },
+            };
+        }
+    }
 
     // Generar y guardar archivo
     const buffer = await workbook.xlsx.writeBuffer();

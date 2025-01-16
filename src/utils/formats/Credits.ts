@@ -14,8 +14,6 @@ export const CreditPeriodObjectValues: { [key: string]: number } = {
     "QUINCENAL": 26
 }
 
-
-
 /**
  * function to convert monthly rate to another period
  * based on https://matefinanciera.com/conversion-de-tasas-de-interés (conversion de periodicidad)

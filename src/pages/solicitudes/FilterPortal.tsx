@@ -31,7 +31,7 @@ export const FilterPortal: FC<{
                     </div>
                     <div className="filter-group">
                         <p>Estado:</p>
-                        {Object.keys(Status).map((key) => (
+                        {Object.values(Status).map((key) => (
                             <label key={key}>
                                 <input
                                     type="radio"

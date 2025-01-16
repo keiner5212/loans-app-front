@@ -24,10 +24,10 @@ import { CreditType } from "@/constants/credits/Credit";
 import { obtenerDetallePeriodo } from "@/utils/amortizacion/Credit";
 
 export enum PaymentStatus {
-    PENDING = "PENDING",
-    LATE = "LATE",
-    RELEASED = "RELEASED",
-    LATE_RELEASED = "LATE_RELEASED",
+    PENDING = "Pendiente",
+    LATE = "Atrasado",
+    RELEASED = "Pagado",
+    LATE_RELEASED = "Pagado atrasado",
 }
 
 interface PagoProps {
